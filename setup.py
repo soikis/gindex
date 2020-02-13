@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gindex",
-    version="0.0.1",
+    version="0.0.1a1", #a-alpha b-beta rc-release
     author="Tal Soikis",
     author_email="talsoikis@gmail.com",
     description="A pure python geometrical indexing library.",
