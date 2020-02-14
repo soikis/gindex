@@ -52,23 +52,19 @@ class QTree:
         @param val: the value to be searched
         @return: the node containing the value, else None.
         """
-        if val in self.root:
-            node = self.root
-            while not node.isleaf:
-                for son_s in "nw", "ne", "sw", "se":
-                    son = getattr(node, son_s)
-                    if val in son:
-                        node = son
-                        break
-            return node
+        assert val in self.root, f"{val} not in this index extent: {self.extent}"
+        node = self.root
+        while not node.isleaf:
+            for son_s in "nw", "ne", "sw", "se":
+                son = getattr(node, son_s)
+                if val in son:
+                    node = son
+                    break
+        return node
 
     def __iter__(self):
         yield from self.root
 
-    def assert_correct(self):
-        for node in self:
-            if node.node_data:
-                assert (node.node_data[0] in node)
 
     # def search(self, point):
     #     pass

@@ -3,7 +3,10 @@ from copy import deepcopy
 from itertools import product
 
 
-Extent = namedtuple('Extent', ['x', 'y', 'w', 'h'])
+class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
+    def __str__(self):
+        return f"(bottom_left=({self.x},{self.y}),"\
+        f"top_right=({self.x+self.w},{self.y+self.h}))"
 
 class Node():
     
@@ -21,7 +24,7 @@ class Node():
     def __iter__(self):
         yield self
         for child in filter(None, self.children):
-            yield child
+            yield from child
 
     @property
     def children(self):

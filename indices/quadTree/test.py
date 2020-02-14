@@ -154,34 +154,26 @@ class QuadTree:
 
 def main():
     from timeit import default_timer
-    data = [(randint(0, 128), randint(0, 128)) for _ in range(30)]
-    #data = [(30, 90)]
+    import random
+    random.seed(a=10)
+    data = [(randint(0, 128), randint(0, 128)) for _ in range(586)]
     st=default_timer()
-    qt = QuadTree([], 128.0, 128.0)
-    p = QTree([], (0,0,128,128))
+    qt = QuadTree([],128,128)
     for i, d in enumerate(data, start=1):
-        print("Aggiungo", d)
         qt.add_node(d)
-        p.add_node(d)
-        qt.assert_correct()
-        p.assert_correct()
-        for node in qt:
-            print(node)
-        assert i == qt.size
+        if i == len(data)-1:
+            assert i == qt.size
+        print(i)
     nt=default_timer()
+    print(nt-st)
     sp=default_timer()
-    print('$'*20,'\n')
-    p = QTree([], (0,0,128,128))
+    qt = QTree([], (0,0,128,128))
     for i, d in enumerate(data, start=1):
-        print("Aggiungo", d)
-        p.add_node(d)
-        p.assert_correct()
-        for node in p:
-            print(node)
-        assert i == p.size
+        qt.add_node(d)
+        if i == len(data)-1:
+            assert i == qt.size
     np=default_timer()
     print(nt-st)
     print(np-sp)
-
 if __name__ == "__main__":
     main()
