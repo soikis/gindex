@@ -1,26 +1,31 @@
 from collections import namedtuple
-from itertools import product
 from copy import deepcopy
+from itertools import product
+
 
 Extent = namedtuple('Extent', ['x', 'y', 'w', 'h'])
 
 class Node():
     
-    __slots__ = ('nw','ne','sw','se','extent','data')
+    __slots__ = ('nw','ne','sw','se','extent','node_data')
 
-    def __init__(self, data, x, y, w, h):
+    def __init__(self, node_data, x, y, w, h):
         self.nw, self.ne, self.sw, self.se = [None,None,None,None]
         self.extent = Extent(x, y, w, h)
-        print(data)
-        self.data = data
+        self.node_data = node_data
 
     def __contains__(self, point):
         return self.extent.x <= point[0] <= self.extent.x + self.extent.w and \
         self.extent.y <= point[1] <= self.extent.y + self.extent.h
 
+    def __iter__(self):
+        yield self
+        for child in filter(None, self.children):
+            yield child
+
     @property
     def children(self):
-        return self.nw, self.ne, self.se, self.sw
+        return self.nw, self.sw, self.se, self.ne
     
     @children.setter
     def children(self, nodes):
@@ -33,8 +38,17 @@ class Node():
     def split_node(self):
         sw = self.extent.w/2
         sh = self.extent.h/2
-        self.children = [Node(self.data, *vertex, sw, sh) for vertex in 
+        self.children = [Node([], *vertex, sw, sh) for vertex in 
         product([self.extent.x,self.extent.x+sw],[self.extent.y+sh,self.extent.y])]
+
+    def __str__(self):
+        return "<{}, {}>".format(self.node_data, self.extent)
+
+    # def add_data(self, data):
+    #     if len(data) > 1:
+    #         self.node_data.extend(data)
+    #     else:
+    #         self.node_data.append(data)
 
 if __name__=='__main__':
     point = (2.5,2.5)
