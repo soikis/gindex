@@ -1,11 +1,22 @@
 from node import Extent, Node
-from collections import deque
+from collections import deque, Iterable
 
 class QTree:
 
-    def __init__(self, data, tree_extent):
+    def __init__(self, data, tree_extent=None, depth=8):
+        if tree_extent == None:
+            if isinstance(data,Iterable):
+                bx = min([p[0] for p in data])
+                tx = max([p[0] for p in data])
+                by = min([p[1] for p in data])
+                ty = max([p[1] for p in data])
+                tree_extent = [bx,by,tx,ty]
+            else:
+                raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
         self.root = Node(data, *tree_extent)
         self.size = 0
+        # self.indexed_points = []
+        self.depth = depth
         if data:
             self.index(self.root)
         
@@ -29,6 +40,9 @@ class QTree:
             for val in node.node_data:
                 # TODO make formula to find which quad a point is in a node
                 for child in node.children:
+                    if child.node_data:
+                        if val == child.node_data[0]:
+                            return None
                     if val in child:
                         child.node_data.append(val)
                         break
@@ -41,26 +55,53 @@ class QTree:
         @param val: the value to be added.
         @return: None
         """
-        node = self.search(val)
+        node = self.search_tree(val, self.root)
+        # print('@'*50)
+        if node == None:
+            return
+        # if node.node_data:
+        #     if node.node_data[0] == val:
+        #         return
+        if node.node_data:
+            if node.node_data[0] == val:
+                return None
         node.node_data.append(val)
         self.index(node)
+        self.indexed_points.append(val)
         self.size += 1
 
-    def search(self, val):
-        """
-        Searches the value val in the QT.
-        @param val: the value to be searched
-        @return: the node containing the value, else None.
-        """
-        assert val in self.root, f"{val} not in this index extent: {self.extent}"
-        node = self.root
-        while not node.isleaf:
-            for son_s in "nw", "ne", "sw", "se":
-                son = getattr(node, son_s)
-                if val in son:
-                    node = son
-                    break
-        return node
+    # def search(self, val):
+    #     """
+    #     Searches the value val in the QT.
+    #     @param val: the value to be searched
+    #     @return: the node containing the value, else None.
+    #     """
+    #     assert val in self.root, f"{val} not in this index extent: {self.extent}"
+    #     node = self.root
+    #     while not node.isleaf:
+    #         for son_s in "nw", "ne", "sw", "se":
+    #             son = getattr(node, son_s)
+    #             if son.node_data:
+    #                 if val == son.node_data[0]:
+    #                     return None
+    #             if val in son:
+    #                 node = son
+    #                 break
+    #     return node
+
+    def search_tree(self, data, root=None):
+        if root == None:
+            root = self.root
+        if root.isleaf:
+            if data in root:
+                return root
+            return None
+        else:
+            children = [self.search_tree(data, child_node) for child_node in root.children]
+            # print(children)
+            return next(filter(None, children),None)
+
+
 
     def __iter__(self):
         yield from self.root
@@ -69,7 +110,7 @@ class QTree:
     # def search(self, point):
     #     pass
 
-if __name__=='__main__':
-    points = [(2.5,2.5),(0,0),(5,5)]
-    extent = [0,0,5,5]
-    qtree = QTree(points, extent)
+# if __name__=='__main__':
+#     points = [(2.5,2.5),(0,0),(5,5)]
+#     extent = [0,0,5,5]
+#     qtree = QTree(points, extent)

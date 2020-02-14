@@ -1,12 +1,8 @@
 random.seed(a=10)
 data = [(randint(0, 128), randint(0, 128)) for _ in range(5)]
 extent=[0,0,128,128]
-<[], (bottom_left=(0,0),top_right=(128,128))>
-<[], (bottom_left=(0,64.0),top_right=(64.0,128.0))>
-<[(8, 109)], (bottom_left=(0,96.0),top_right=(32.0,128.0))>
-<[], (bottom_left=(0,64.0),top_right=(32.0,96.0))>
-<[], (bottom_left=(32.0,64.0),top_right=(64.0,96.0))>
-<[(52, 118)], (bottom_left=(32.0,96.0),top_right=(64.0,128.0))>
-<[], (bottom_left=(0,0),top_right=(64.0,64.0))>
-<[(123, 3)], (bottom_left=(64.0,0),top_right=(128.0,64.0))>
-<[(125, 71)], (bottom_left=(64.0,64.0),top_right=(128.0,128.0))>
+bottom_left=(0,96.0),top_right=(32.0,128.0)) (8, 109)
+(bottom_left=(64.0,0),top_right=(128.0,64.0)) (123, 3)
+(bottom_left=(32.0,96.0),top_right=(64.0,128.0)) (52, 118)
+(bottom_left=(64.0,64.0),top_right=(128.0,128.0)) (125, 71)
+(bottom_left=(0,0),top_right=(64.0,64.0)) (41, 8)
