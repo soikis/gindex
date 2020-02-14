@@ -171,11 +171,11 @@ def main():
     from timeit import default_timer
     import random
     random.seed(a=10)
-    data = [(randint(0, 128), randint(0, 128)) for _ in range(10000)]
+    data = [(randint(0, 128), randint(0, 128)) for _ in range(5)]
     st=default_timer()
     qt = QuadTree([],128,128)
     for i, d in enumerate(data, start=1):
-        print(i,d)
+        # print(i,d)
         qt.add_node(d)
         if i == len(data):
             # print(qt.size, len(set(data)))
@@ -194,9 +194,11 @@ def main():
             # print(qt.size, len(set(data)))
             # print(len(qt.indexed_points),len(set(qt.indexed_points)))
             assert len(set(data)) == qt.size
-    # for point in data:
-    #     node = qt.search_tree(point)
-    #     print(node.extent,data)
+    for point in data:
+        node = qt.search_tree(point)
+        print(node.extent,point)
+        node = qt.search_with_list(point)
+        print(node.extent,point)
     np=default_timer()
     print(nt-st)
     print(np-sp)

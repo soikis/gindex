@@ -1,5 +1,7 @@
+from collections import Counter, deque
+from collections.abc import Iterable
+from itertools import compress
 from node import Extent, Node
-from collections import deque, Iterable
 
 class QTree:
 
@@ -14,20 +16,15 @@ class QTree:
             else:
                 raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
         self.root = Node(data, *tree_extent)
-        self.size = 0
-        # self.indexed_points = []
+        self.indexed_points = []
         self.depth = depth
+        self.size = 0
         if data:
             self.index(self.root)
         
     @property
     def extent(self):
         return self.root.extent
-
-    def choose_child(self, node, data):
-        for name,child in zip(['nw', 'sw', 'se', 'ne'], node.children):
-            if data in child:
-                return name
 
     def index(self, root):
         node_list = deque([root])
@@ -48,6 +45,17 @@ class QTree:
                         break
             node.node_data.clear()
             node_list.extend(node.children)
+
+    def add_to_index(self, data):
+        node = self.search_tree(data, self.root)
+        if node == None:
+            return
+        if node.node_data:
+            if node.node_data[0] == data:
+                return
+        node.node_data.append(data)
+        self.index(node)
+        self.indexed_points.append(data)
 
     def add_node(self, val):
         """
@@ -88,6 +96,17 @@ class QTree:
     #                 node = son
     #                 break
     #     return node
+
+    def search_with_list(self, data):
+        if data in self.root:
+            node = self.root
+            while not node.isleaf:
+                not_in_data = [1 for child in node.children if (child.node_data[0] == data if any(child.node_data) else False)]
+                if any(not_in_data):
+                    return
+                bool_list = [True if data in child else False for child in node.children]
+                node = next(compress(node.children,bool_list))
+            return node
 
     def search_tree(self, data, root=None):
         if root == None:
