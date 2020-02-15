@@ -38,7 +38,7 @@ class Node():
     def isleaf(self):
         return not any(self.children)
 
-    def split_node(self):
+    def split(self):
         sw = self.extent.w / 2
         sh = self.extent.h / 2
         self.children = [Node([], *vertex, sw, sh, self.depth + 1) for vertex in

@@ -37,7 +37,7 @@ class QuadTree:
             if len(node.data) <= 1:
                 continue
             if node.isleaf:
-                node.split_node()
+                node.split()
             for i, value in enumerate(node.data):
                 # TODO make formula to find which quad a point is in a node
                 for child in node.children:
