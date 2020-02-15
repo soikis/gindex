@@ -5,7 +5,7 @@ from node import Node
 
 class QuadTree:
 
-    def __init__(self, data, tree_extent=None, max_depth=8, copy_data=True):
+    def __init__(self, data, indices, tree_extent=None, max_depth=8, copy_data=True):
         if tree_extent is None:
             if isinstance(data, Iterable):
                 bx = min([p[0] for p in data])
@@ -17,7 +17,7 @@ class QuadTree:
                 raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
         if copy_data:
             data = data.copy()
-        self.root = Node(data, *tree_extent, depth=0)
+        self.root = Node(data, indices, *tree_extent, depth=0)
         self.max_depth = max_depth
         self.indexed_points = []
         if isinstance(data, Iterable):
