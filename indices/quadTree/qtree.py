@@ -18,7 +18,7 @@ class QTree:
                 raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
         if copy_data:
             data = data.copy()
-        self.root = Node(data, *tree_extent, depth=0)
+        self.root = Node(data, *tree_extent, depth=1)
         self.max_depth = max_depth
         self.indexed_points = []
         if isinstance(data,Iterable):
