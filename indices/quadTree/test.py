@@ -179,6 +179,10 @@ def main():
         qt.add_node(d)
         if i == len(data):
             assert len(set(data)) == qt.size
+    for point in data:
+        node = qt.search(point)
+        # print(node.bounds,data)
+
     nt=default_timer()
     sp=default_timer()
     qt = QTree([], (0,0,128,128))
@@ -204,5 +208,6 @@ def main():
     # end = default_timer()
     # print(end-strt)
     # strt = default_timer()
+
 if __name__ == "__main__":
     main()
