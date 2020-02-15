@@ -175,7 +175,7 @@ def main():
     st=default_timer()
     qt = QuadTree([],128,128)
     for i, d in enumerate(data, start=1):
-        print(i,d)
+        # print(i,d)
         qt.add_node(d)
         if i == len(data):
             assert len(set(data)) == qt.size
@@ -194,8 +194,15 @@ def main():
     strt = default_timer()
     for point in data:
         node = qt.search_with_list(point)
-        # print(node.extent,point)
+        print(node.extent,point)
     end = default_timer()
     print(end-strt)
+    # strt = default_timer()
+    # for point in data:
+    #     node = qt.search_with_list2(point)
+    #     # print(node.extent,point)
+    # end = default_timer()
+    # print(end-strt)
+    # strt = default_timer()
 if __name__ == "__main__":
     main()
