@@ -1,18 +1,18 @@
-from collections import Counter, deque
+from collections import deque
 from collections.abc import Iterable
-from itertools import compress
-from node import Extent, Node
+from node import Node
 
-class QTree:
+
+class QuadTree:
 
     def __init__(self, data, tree_extent=None, max_depth=8, copy_data=True):
-        if tree_extent == None:
-            if isinstance(data,Iterable):
+        if tree_extent is None:
+            if isinstance(data, Iterable):
                 bx = min([p[0] for p in data])
                 tx = max([p[0] for p in data])
                 by = min([p[1] for p in data])
                 ty = max([p[1] for p in data])
-                tree_extent = [bx,by,tx,ty]
+                tree_extent = [bx, by, tx, ty]
             else:
                 raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
         if copy_data:
@@ -20,9 +20,9 @@ class QTree:
         self.root = Node(data, *tree_extent, depth=0)
         self.max_depth = max_depth
         self.indexed_points = []
-        if isinstance(data,Iterable):
+        if isinstance(data, Iterable):
             self.index(self.root)
-        
+
     @property
     def extent(self):
         return self.root.extent
@@ -38,7 +38,7 @@ class QTree:
                 continue
             if node.isleaf:
                 node.split_node()
-            for i,value in enumerate(node.data):
+            for i, value in enumerate(node.data):
                 # TODO make formula to find which quad a point is in a node
                 for child in node.children:
                     if child.data:
@@ -52,7 +52,7 @@ class QTree:
 
     def add_data(self, val):
         node = self.search(val)
-        if node == None:
+        if node is None:
             return
         if node.data:
             if val in node.data:
@@ -75,35 +75,3 @@ class QTree:
 
     def __iter__(self):
         yield from self.root
-
-
-def main():
-    from timeit import default_timer
-    import random
-    random.seed(a=10)
-    data = [(random.randint(0, 128), random.randint(0, 128)) for _ in range(10000)]
-    sp=default_timer()
-    qt = QTree([], (0,0,128,128),4)
-    for i, d in enumerate(data, start=1):
-        # print(i,d)
-        # print(d in qt.indexed_points)
-        qt.add_data(d)
-        if i == len(data):
-            print(len(qt.indexed_points),len(set(data)))
-            assert len(set(data)) == len(qt.indexed_points)
-    np=default_timer()
-    print(f'index time: {np-sp} seconds')
-    sp=default_timer()
-    for point in data:
-        # node = qt.search_tree(point)
-        node = qt.search(point)
-        # print(node)
-        # print(node.extent,node.data)
-        # if len(node.data) > 1:
-        #     print(node.extent,node.data)
-    np=default_timer()
-    print(f'search time: {np-sp} seconds')
-if __name__ == "__main__":
-    main()
-
-# TODO check list search for correctnes vs new baseline

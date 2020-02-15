@@ -6,12 +6,12 @@ extent=[0,0,128,128]                                            |
 max_depth=4                                                     |
 ________________________________________________________________|
 ____________________________________________
-timings:                                    |
+timings: Based on my laptop                 |
 if all data is inserted to constructor:     |
 index time: 0.007681699999999986 seconds    |
 if constructed only by add_data:            |
-index time: 0.15996129999999997 seconds     |
-search time: 0.18418399999999996 seconds    |
+index time: 0.009288999999999992 seconds    |
+search time: 0.007021799999999995 seconds   |
 ____________________________________________|
 
 ____________________________________________________________

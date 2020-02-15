@@ -1,2 +1,3 @@
 .vscode*
+!.vscode/setting.json
 indices/quadTree/__pycache__/
