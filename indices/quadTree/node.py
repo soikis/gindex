@@ -46,21 +46,4 @@ class Node():
         product([self.extent.x,self.extent.x+sw],[self.extent.y+sh,self.extent.y])]
 
     def __str__(self):
-        return "<{}, {}>".format(self.data, self.extent)
-
-
-if __name__=='__main__':
-    point = (2.5,2.5)
-    point2 = (0,0)
-    point3 = (5,5)
-    extent = [0,0,5,5]
-    node = Node(point,*extent)
-    print(point in node)
-    print(point2 in node)
-    print(point3 in node)
-    node.split_node()
-    for child in node.children:
-        print(child.extent)
-        print(point in child)
-        print(point2 in child)
-        print(point3 in child)
+        return "\nNode______________________________________________________________\n"+self.extent.__str__() + f"\n data: {(str(self.data))} \n__________________________________________________________________"
