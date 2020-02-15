@@ -50,7 +50,7 @@ class QuadTree:
             node.data.clear()
             node_list.extend(node.children)
 
-    def add_data(self, val):
+    def index_data(self, val):
         node = self.search(val)
         if node is None:
             return
