@@ -1,5 +1,8 @@
+from collections import deque
+from collections.abc import Iterable 
+
 from node import Extent, Node
-from collections import deque, Iterable
+
 
 class QTree:
 
@@ -15,7 +18,7 @@ class QTree:
                 raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
         self.root = Node(data, *tree_extent)
         self.size = 0
-        # self.indexed_points = []
+        self.indexed_points = []
         self.depth = depth
         if data:
             self.index(self.root)
@@ -56,12 +59,8 @@ class QTree:
         @return: None
         """
         node = self.search_tree(val, self.root)
-        # print('@'*50)
         if node == None:
             return
-        # if node.node_data:
-        #     if node.node_data[0] == val:
-        #         return
         if node.node_data:
             if node.node_data[0] == val:
                 return None
@@ -69,25 +68,6 @@ class QTree:
         self.index(node)
         self.indexed_points.append(val)
         self.size += 1
-
-    # def search(self, val):
-    #     """
-    #     Searches the value val in the QT.
-    #     @param val: the value to be searched
-    #     @return: the node containing the value, else None.
-    #     """
-    #     assert val in self.root, f"{val} not in this index extent: {self.extent}"
-    #     node = self.root
-    #     while not node.isleaf:
-    #         for son_s in "nw", "ne", "sw", "se":
-    #             son = getattr(node, son_s)
-    #             if son.node_data:
-    #                 if val == son.node_data[0]:
-    #                     return None
-    #             if val in son:
-    #                 node = son
-    #                 break
-    #     return node
 
     def search_tree(self, data, root=None):
         if root == None:
@@ -100,8 +80,6 @@ class QTree:
             children = [self.search_tree(data, child_node) for child_node in root.children]
             # print(children)
             return next(filter(None, children),None)
-
-
 
     def __iter__(self):
         yield from self.root

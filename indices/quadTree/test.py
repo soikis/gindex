@@ -129,24 +129,24 @@ class QuadTree:
             node.val.clear()
             node_list.extend(node.sons)
 
-    # def search(self, val):
-    #     """
-    #     Searches the value val in the QT.
-    #     @param val: the value to be searched
-    #     @return: the node containing the value, else None.
-    #     """
-    #     if val in self.root.bounds:
-    #         depth = 0
-    #         node = self.root
-    #         while not node.leaf:
-    #             for son_s in "nw", "ne", "sw", "se":
-    #                 son = getattr(node, son_s)
-    #                 if val in son.bounds:
-    #                     print('match!')
-    #                     node = son
-    #                     depth += 1
-    #                     break
-    #         return node
+    def search(self, val):
+        """
+        Searches the value val in the QT.
+        @param val: the value to be searched
+        @return: the node containing the value, else None.
+        """
+        if val in self.root.bounds:
+            depth = 0
+            node = self.root
+            while not node.leaf:
+                for son_s in "nw", "ne", "sw", "se":
+                    son = getattr(node, son_s)
+                    if val in son.bounds:
+                        # print('match!')
+                        node = son
+                        depth += 1
+                        break
+            return node
     
     def search_value(self, val):
         if val in self.root.bounds:
@@ -171,7 +171,7 @@ def main():
     from timeit import default_timer
     import random
     random.seed(a=10)
-    data = [(randint(0, 128), randint(0, 128)) for _ in range(10000)]
+    data = [(randint(0, 128), randint(0, 128)) for _ in range(500)]
     st=default_timer()
     qt = QuadTree([],128,128)
     for i, d in enumerate(data, start=1):
@@ -180,9 +180,9 @@ def main():
         if i == len(data):
             # print(qt.size, len(set(data)))
             assert len(set(data)) == qt.size
-    # for point in data:
-    #     node = qt.search_value(point)
-    #     print(node.bounds,data)
+    for point in data:
+        node = qt.search(point)
+        # print(node.bounds,data)
     nt=default_timer()
     sp=default_timer()
     qt = QTree([], (0,0,128,128))
@@ -194,13 +194,13 @@ def main():
             # print(qt.size, len(set(data)))
             # print(len(qt.indexed_points),len(set(qt.indexed_points)))
             assert len(set(data)) == qt.size
-    # for point in data:
-    #     node = qt.search_tree(point)
-    #     print(node.extent,data)
     np=default_timer()
     print(nt-st)
     print(np-sp)
-    d = Counter(qt.indexed_points)
-    # print(d.most_common(100))
+    for point in data:
+        node = qt.search_tree(point)
+        print(node.extent,node.node_data)
+    # d = Counter(qt.indexed_points)
+    # # print(d.most_common(100))
 if __name__ == "__main__":
     main()
