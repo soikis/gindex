@@ -9,12 +9,13 @@ class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
 
 
 class Node():
-    __slots__ = ('nw', 'ne', 'sw', 'se', 'extent', 'data', 'depth')
+    __slots__ = ('nw', 'ne', 'sw', 'se', 'extent', 'data', 'depth', 'indices')
 
-    def __init__(self, data, x, y, w, h, depth):
+    def __init__(self, data, indices, x, y, w, h, depth=8):
         self.nw, self.ne, self.sw, self.se = [None, None, None, None]
         self.extent = Extent(x, y, w, h)
         self.data = data
+        self.indices = indices
         self.depth = depth
 
     def __contains__(self, point):
@@ -41,10 +42,10 @@ class Node():
     def split(self):
         sw = self.extent.w / 2
         sh = self.extent.h / 2
-        self.children = [Node([], *vertex, sw, sh, self.depth + 1) for vertex in
+        self.children = [Node([], [], *vertex, sw, sh, self.depth + 1) for vertex in
                         product([self.extent.x, self.extent.x + sw],
                                 [self.extent.y + sh, self.extent.y])]
 
     def __str__(self):
-        return "\nNode{'_______________'*4}\n" + self.extent.__str__() + \
-            f"\n data: {(str(self.data))} \n{'_______________'*4}"
+        return f"\nNode{'_______________'*4}\n" + self.extent.__str__() + \
+            f"\n data: {str(list(zip(self.data,self.indices)))} \n{'_______________'*4}"
