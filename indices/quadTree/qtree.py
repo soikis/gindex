@@ -6,7 +6,7 @@ from node import Extent, Node
 
 class QTree:
 
-    def __init__(self, data, tree_extent=None, depth=8):
+    def __init__(self, data, tree_extent=None, max_depth=8, copy_data=True):
         if tree_extent == None:
             if isinstance(data,Iterable):
                 bx = min([p[0] for p in data])
@@ -16,58 +16,50 @@ class QTree:
                 tree_extent = [bx,by,tx,ty]
             else:
                 raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
-        self.root = Node(data, *tree_extent)
-        self.size = 0
+        if copy_data:
+            data = data.copy()
+        self.root = Node(data, *tree_extent, depth=1)
+        self.max_depth = max_depth
         self.indexed_points = []
-        self.depth = depth
-        if data:
+        if isinstance(data,Iterable):
             self.index(self.root)
         
     @property
     def extent(self):
         return self.root.extent
 
-    def choose_child(self, node, data):
-        for name,child in zip(['nw', 'sw', 'se', 'ne'], node.children):
-            if data in child:
-                return name
-
     def index(self, root):
         node_list = deque([root])
         while node_list:
             node = node_list.popleft()
-            if len(node.node_data) <= 1:
+            if node.depth == self.max_depth:
+                continue
+            if len(node.data) <= 1:
                 continue
             if node.isleaf:
                 node.split_node()
-            for val in node.node_data:
+            for i,value in enumerate(node.data):
                 # TODO make formula to find which quad a point is in a node
                 for child in node.children:
-                    if child.node_data:
-                        if val == child.node_data[0]:
-                            return None
-                    if val in child:
-                        child.node_data.append(val)
+                    if child.data:
+                        if value in child.data:
+                            continue
+                    if value in child:
+                        child.data.append(value)
                         break
-            node.node_data.clear()
+            node.data.clear()
             node_list.extend(node.children)
 
-    def add_node(self, val):
-        """
-        Adds a node containing val to the QT.
-        @param val: the value to be added.
-        @return: None
-        """
+    def add_data(self, val):
         node = self.search_tree(val, self.root)
         if node == None:
             return
-        if node.node_data:
-            if node.node_data[0] == val:
-                return None
-        node.node_data.append(val)
+        if node.data:
+            if val in node.data:
+                return
+        node.data.append(val)
         self.index(node)
         self.indexed_points.append(val)
-        self.size += 1
 
     def search_tree(self, data, root=None):
         if root == None:
@@ -78,17 +70,38 @@ class QTree:
             return None
         else:
             children = [self.search_tree(data, child_node) for child_node in root.children]
-            # print(children)
             return next(filter(None, children),None)
 
     def __iter__(self):
         yield from self.root
 
 
-    # def search(self, point):
-    #     pass
+def main():
+    from timeit import default_timer
+    import random
+    random.seed(a=10)
+    data = [(random.randint(0, 128), random.randint(0, 128)) for _ in range(5)]
+    sp=default_timer()
+    qt = QTree([], (0,0,128,128),4)
+    for i, d in enumerate(data, start=1):
+        # print(i,d)
+        # print(d in qt.indexed_points)
+        qt.add_data(d)
+        if i == len(data):
+            # print(len(qt.indexed_points),len(set(data)))
+            assert len(set(data)) == len(qt.indexed_points)
+    np=default_timer()
+    print(f'index time: {np-sp} seconds')
+    sp=default_timer()
+    for point in data:
+        node = qt.search_tree(point)
+        print(node)
+        print(node.extent,node.data)
+        # if len(node.data) > 1:
+        #     print(node.extent,node.data)
+    np=default_timer()
+    print(f'search time: {np-sp} seconds')
+if __name__ == "__main__":
+    main()
 
-# if __name__=='__main__':
-#     points = [(2.5,2.5),(0,0),(5,5)]
-#     extent = [0,0,5,5]
-#     qtree = QTree(points, extent)
+# TODO check list search for correctnes vs new baseline
