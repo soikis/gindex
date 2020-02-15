@@ -10,12 +10,13 @@ class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
 
 class Node():
     
-    __slots__ = ('nw','ne','sw','se','extent','node_data')
+    __slots__ = ('nw','ne','sw','se','extent','data','depth')
 
-    def __init__(self, node_data, x, y, w, h):
+    def __init__(self, data, x, y, w, h,depth):
         self.nw, self.ne, self.sw, self.se = [None,None,None,None]
         self.extent = Extent(x, y, w, h)
-        self.node_data = node_data
+        self.data = data
+        self.depth = depth
 
     def __contains__(self, point):
         return self.extent.x <= point[0] <= self.extent.x + self.extent.w and \
@@ -41,17 +42,12 @@ class Node():
     def split_node(self):
         sw = self.extent.w/2
         sh = self.extent.h/2
-        self.children = [Node([], *vertex, sw, sh) for vertex in 
+        self.children = [Node([], *vertex, sw, sh, self.depth+1) for vertex in 
         product([self.extent.x,self.extent.x+sw],[self.extent.y+sh,self.extent.y])]
 
     def __str__(self):
-        return "<{}, {}>".format(self.node_data, self.extent)
+        return "<{}, {}>".format(self.data, self.extent)
 
-    # def add_data(self, data):
-    #     if len(data) > 1:
-    #         self.node_data.extend(data)
-    #     else:
-    #         self.node_data.append(data)
 
 if __name__=='__main__':
     point = (2.5,2.5)
