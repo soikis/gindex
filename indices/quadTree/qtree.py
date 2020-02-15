@@ -63,7 +63,9 @@ class QTree:
         @param val: the value to be added.
         @return: None
         """
-        node = self.search_tree(val, self.root)
+        # node = self.search_with_list(val)
+        # node = self.search_tree(val)
+        node = self.search(val)
         # print('@'*50)
         if node == None:
             return
@@ -78,33 +80,40 @@ class QTree:
         self.indexed_points.append(val)
         self.size += 1
 
-    # def search(self, val):
-    #     """
-    #     Searches the value val in the QT.
-    #     @param val: the value to be searched
-    #     @return: the node containing the value, else None.
-    #     """
-    #     assert val in self.root, f"{val} not in this index extent: {self.extent}"
-    #     node = self.root
-    #     while not node.isleaf:
-    #         for son_s in "nw", "ne", "sw", "se":
-    #             son = getattr(node, son_s)
-    #             if son.node_data:
-    #                 if val == son.node_data[0]:
-    #                     return None
-    #             if val in son:
-    #                 node = son
-    #                 break
-    #     return node
+    def search(self, val):
+        """
+        Searches the value val in the QT.
+        @param val: the value to be searched
+        @return: the node containing the value, else None.
+        """
+        assert val in self.root, f"{val} not in this index extent: {self.extent}"
+        node = self.root
+        while not node.isleaf:
+            for son_s in "nw", "ne", "sw", "se":
+                son = getattr(node, son_s)
+                if son.node_data:
+                    if val == son.node_data[0]:
+                        return None
+                if val in son:
+                    node = son
+                    break
+        return node
 
     def search_with_list(self, data):
         if data in self.root:
             node = self.root
             while not node.isleaf:
-                not_in_data = [1 for child in node.children if (child.node_data[0] == data if any(child.node_data) else False)]
-                if any(not_in_data):
-                    return
+                in_data = [1 if (child.node_data[0] == data if any(child.node_data) else False) else 0 for child in node.children]
+                if any(in_data):
+                    return node.children[in_data.index(1)]
                 bool_list = [True if data in child else False for child in node.children]
+                # t = [child for child in node.children if data in child]
+                # for n in t:
+                #     if any(n.node_data):
+                #         if n.node_data[0] == data:
+                #             return node
+                #     node = n
+                #     break
                 node = next(compress(node.children,bool_list))
             return node
 
