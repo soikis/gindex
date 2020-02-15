@@ -11,7 +11,7 @@ class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
 class Node():
     __slots__ = ('nw', 'ne', 'sw', 'se', 'extent', 'data', 'depth', 'indices')
 
-    def __init__(self, data, indices, x, y, w, h, depth=8):
+    def __init__(self, data, indices, x, y, w, h, depth):
         self.nw, self.ne, self.sw, self.se = [None, None, None, None]
         self.extent = Extent(x, y, w, h)
         self.data = data

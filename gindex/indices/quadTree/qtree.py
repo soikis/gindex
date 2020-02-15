@@ -20,7 +20,7 @@ class QuadTree:
         self.root = Node(data, indices, *tree_extent, depth=0)
         self.max_depth = max_depth
         self.indexed_points = []
-        if isinstance(data, Iterable):
+        if isinstance(data, Iterable) and data:
             self.index(self.root)
 
     @property
@@ -31,31 +31,35 @@ class QuadTree:
         node_list = deque([root])
         while node_list:
             node = node_list.popleft()
+
             if node.depth == self.max_depth:
-                # self.indexed_points.extend(node.data)
                 continue
-            if len(node.data) <= 1:
+            
+            if not node.data:
                 continue
+
             if node.isleaf:
                 node.split()
+
             for i, value in enumerate(node.data):
                 # TODO make formula to find which quad a point is in a node
                 for child in node.children:
-                    if child.data:
-                        if value in child.data:
-                            continue
                     if value in child:
+                        if value in child.data:
+                            break
                         child.data.append(value)
                         child.indices.append(node.indices[i])
                         break
-
+            
+            self.indexed_points.extend(node.data)
+            
             node.data.clear()
             node.indices.clear()
 
             node_list.extend(node.children)
 
     def index_data(self, val, index):
-        # Checking index correctness is responsibility of index correctness
+        # Checking index correctness is responsibility of user
         node = self.search(val)
 
         if node is None:
@@ -69,7 +73,7 @@ class QuadTree:
         node.indices.append(index)
 
         self.index(node)
-        self.indexed_points.append(val)
+        # self.indexed_points.append(val)
 
     def search(self, data):
         if data in self.root:
@@ -82,6 +86,7 @@ class QuadTree:
                     node = n
                     break
             return node
+        raise f"{data} not in tree with extent {self.extent}"
 
     def __iter__(self):
         yield from self.root
