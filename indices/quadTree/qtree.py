@@ -1,11 +1,11 @@
 from collections import deque
 from collections.abc import Iterable
-from node import Node
+from .node import Node
 
 
 class QuadTree:
 
-    def __init__(self, data, indices, tree_extent=None, max_depth=8, copy_data=True):
+    def __init__(self, data=[], indices=[], tree_extent=None, max_depth=8, copy_data=True):
         if tree_extent is None:
             if isinstance(data, Iterable):
                 bx = min([p[0] for p in data])
@@ -37,7 +37,7 @@ class QuadTree:
             if len(node.data) <= 1:
                 continue
             if node.isleaf:
-                node.split_node()
+                node.split()
             for i, value in enumerate(node.data):
                 # TODO make formula to find which quad a point is in a node
                 for child in node.children:
@@ -46,18 +46,28 @@ class QuadTree:
                             continue
                     if value in child:
                         child.data.append(value)
+                        child.indices.append(node.indices[i])
                         break
+
             node.data.clear()
+            node.indices.clear()
+
             node_list.extend(node.children)
 
-    def index_data(self, val):
+    def index_data(self, val, index):
+        # Checking index correctness is responsibility of index correctness
         node = self.search(val)
+
         if node is None:
-            return
+            raise ValueError(f"{val} not in this QuadTree extent: {self.extent}")
+
         if node.data:
             if val in node.data:
                 return
+
         node.data.append(val)
+        node.indices.append(index)
+
         self.index(node)
         self.indexed_points.append(val)
 

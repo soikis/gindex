@@ -11,7 +11,7 @@ class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
 class Node():
     __slots__ = ('nw', 'ne', 'sw', 'se', 'extent', 'data', 'depth', 'indices')
 
-    def __init__(self, data, indices, x, y, w, h, depth):
+    def __init__(self, data, indices, x, y, w, h, depth=8):
         self.nw, self.ne, self.sw, self.se = [None, None, None, None]
         self.extent = Extent(x, y, w, h)
         self.data = data
@@ -39,7 +39,7 @@ class Node():
     def isleaf(self):
         return not any(self.children)
 
-    def split_node(self):
+    def split(self):
         sw = self.extent.w / 2
         sh = self.extent.h / 2
         self.children = [Node([], [], *vertex, sw, sh, self.depth + 1) for vertex in
@@ -47,5 +47,5 @@ class Node():
                                 [self.extent.y + sh, self.extent.y])]
 
     def __str__(self):
-        return "\nNode{'_______________'*4}\n" + self.extent.__str__() + \
+        return f"\nNode{'_______________'*4}\n" + self.extent.__str__() + \
             f"\n data: {str(list(zip(self.data,self.indices)))} \n{'_______________'*4}"
