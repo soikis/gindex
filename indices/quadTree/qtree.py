@@ -32,6 +32,7 @@ class QTree:
         while node_list:
             node = node_list.popleft()
             if node.depth == self.max_depth:
+                # self.indexed_points.extend(node.data)
                 continue
             if len(node.data) <= 1:
                 continue
@@ -80,7 +81,7 @@ def main():
     from timeit import default_timer
     import random
     random.seed(a=10)
-    data = [(random.randint(0, 128), random.randint(0, 128)) for _ in range(500)]
+    data = [(random.randint(0, 128), random.randint(0, 128)) for _ in range(10000)]
     sp=default_timer()
     qt = QTree([], (0,0,128,128),4)
     for i, d in enumerate(data, start=1):
@@ -88,7 +89,7 @@ def main():
         # print(d in qt.indexed_points)
         qt.add_data(d)
         if i == len(data):
-            # print(len(qt.indexed_points),len(set(data)))
+            print(len(qt.indexed_points),len(set(data)))
             assert len(set(data)) == len(qt.indexed_points)
     np=default_timer()
     print(f'index time: {np-sp} seconds')
