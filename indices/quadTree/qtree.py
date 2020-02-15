@@ -51,15 +51,31 @@ class QTree:
             node_list.extend(node.children)
 
     def add_data(self, val):
-        node = self.search_tree(val, self.root)
+        # print(val)
+        node = self.search_tree(val)
+        # print(node)
+        # node = self.search_tree(val)
         if node == None:
             return
-        if node.data:
-            if val in node.data:
-                return
+        if val in node.data:
+            return
         node.data.append(val)
         self.index(node)
+        # print(node)
         self.indexed_points.append(val)
+
+    def search(self, data):
+        node = self.root
+        if data not in node:
+            raise ValueError(f"{data} is not in this QuadTree!")
+        # print(node.extent)
+        while data not in node.data:
+            if not any(node.children):
+                break
+            child = node.get_relevant_child(data)
+            # print(child.extent)
+            node = child
+        return node
 
     def search_tree(self, data, root=None):
         if root == None:
@@ -80,7 +96,7 @@ def main():
     from timeit import default_timer
     import random
     random.seed(a=10)
-    data = [(random.randint(0, 128), random.randint(0, 128)) for _ in range(5)]
+    data = [(random.randint(0, 128), random.randint(0, 128)) for _ in range(500)]
     sp=default_timer()
     qt = QTree([], (0,0,128,128),4)
     for i, d in enumerate(data, start=1):
@@ -94,11 +110,15 @@ def main():
     print(f'index time: {np-sp} seconds')
     sp=default_timer()
     for point in data:
-        node = qt.search_tree(point)
-        print(node)
+        print(point)
+        node = qt.search(point)
         print(node.extent,node.data)
-        # if len(node.data) > 1:
-        #     print(node.extent,node.data)
+        if len(node.data) > 1:
+            print(node.extent,node.data)
+    # node = qt.search_tree((52,118))
+    # print(node.extent,node.data)
+    # node = qt.search((52,118))
+    # print(node.extent,node.data)
     np=default_timer()
     print(f'search time: {np-sp} seconds')
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 from collections import namedtuple
 from copy import deepcopy
 from itertools import product
-
+from math import floor
 
 class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
     def __str__(self):
@@ -22,14 +22,28 @@ class Node():
         return self.extent.x <= point[0] <= self.extent.x + self.extent.w and \
         self.extent.y <= point[1] <= self.extent.y + self.extent.h
 
+    def get_relevant_child(self, data):
+        x = floor((data[0] - self.extent.x)/(self.extent.w/2))
+        y = floor((data[1] - self.extent.y)/(self.extent.h/2))
+        # print(self.extent.x,self.extent.y)
+        # print(self.extent.w,self.extent.h)
+        # print(self.extent)
+        print(x,y)
+        # print(x*2+y)
+        # print('@'*20)
+        return self.get_children_for_index()[x*2+y]
+
     def __iter__(self):
         yield self
         for child in filter(None, self.children):
             yield from child
 
+    def get_children_for_index(self):
+        return self.sw,self.nw,self.se,self.nw
+
     @property
     def children(self):
-        return self.nw, self.sw, self.se, self.ne
+        return self.se, self.sw, self.ne, self.nw
     
     @children.setter
     def children(self, nodes):
