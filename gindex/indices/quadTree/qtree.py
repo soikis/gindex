@@ -83,5 +83,32 @@ class QuadTree:
                     break
             return node
 
+    def search_tree(self, data, root=None):
+        if root is None:
+            root = self.root
+        if root.isleaf:
+            if data in root:
+                return root
+            return None
+        else:
+            children = [self.search_tree(data, child_node) for child_node in root.children]
+            # print(children)
+            return next(filter(None, children),None)
+
+    def add_data(self, val):
+        node = self.search_tree(val, self.root)
+        if node is None:
+            return
+        if node.data:
+            if node.data[0] == val:
+                return None
+        node.data.append(val)
+        if node.data:
+            if val in node.data:
+                return
+        node.data.append(val)
+        self.index(node)
+        self.indexed_points.append(val)
+        
     def __iter__(self):
         yield from self.root
