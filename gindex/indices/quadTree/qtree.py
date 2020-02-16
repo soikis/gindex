@@ -21,6 +21,7 @@ class QuadTree:
         self.max_depth = max_depth
         self.indexed_points = []
         if isinstance(data, Iterable) and data:
+            self.indexed_points = list(set(data.copy()))
             self.index(self.root)
 
     @property
@@ -34,7 +35,7 @@ class QuadTree:
 
             if node.depth == self.max_depth:
                 continue
-            
+
             if not node.data:
                 continue
 
@@ -50,9 +51,7 @@ class QuadTree:
                         child.data.append(value)
                         child.indices.append(node.indices[i])
                         break
-            
-            self.indexed_points.extend(node.data)
-            
+
             node.data.clear()
             node.indices.clear()
 
@@ -73,7 +72,7 @@ class QuadTree:
         node.indices.append(index)
 
         self.index(node)
-        # self.indexed_points.append(val)
+        self.indexed_points.append(val)
 
     def search(self, data):
         if data in self.root:
