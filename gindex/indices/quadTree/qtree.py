@@ -1,6 +1,8 @@
 from collections import deque
 from collections.abc import Iterable
+from itertools import compress
 from .node import Node
+from operator import not_
 
 
 class QuadTree:
@@ -42,18 +44,31 @@ class QuadTree:
             if node.isleaf:
                 node.split()
 
-            for i, value in enumerate(node.data):
-                # TODO make formula to find which quad a point is in a node
-                for child in node.children:
-                    if value in child:
-                        if value in child.data:
-                            break
-                        child.data.append(value)
-                        child.indices.append(node.indices[i])
-                        break
+            indexed = []
+            for child in node.children:
+                in_data = [True if v in child else False for v in node.data]
+                data = list(compress(node.data, in_data))
+                indices = list(compress(node.indices, in_data))
+                child.data.extend(data)
+                child.indices.extend(indices)
+                # indexed.extend(child.data)
+                node.data = list(compress(node.data, map(not_, in_data)))
+                node.indices = list(compress(node.indices, map(not_, in_data)))
+            # node.data.clear()
+            # node.indices.clear()
 
-            node.data.clear()
-            node.indices.clear()
+            # for i, value in enumerate(node.data):
+            #     # TODO make formula to find which quad a point is in a node
+            #     for child in node.children:
+            #         if value in child:
+            #             if value in child.data:
+            #                 break
+            #             child.data.append(value)
+            #             child.indices.append(node.indices[i])
+            #             break
+
+            # node.data.clear()
+            # node.indices.clear()
 
             node_list.extend(node.children)
 
