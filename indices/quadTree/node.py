@@ -2,14 +2,17 @@ from collections import namedtuple
 from copy import deepcopy
 from itertools import product
 from math import floor
+# from functools import lru_cache
+
 
 class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
     def __str__(self):
         return f"(bottom_left=({self.x},{self.y}),"\
         f"top_right=({self.x+self.w},{self.y+self.h}))"
 
+
 class Node():
-    
+
     __slots__ = ('nw','ne','sw','se','extent','data','depth')
 
     def __init__(self, data, x, y, w, h,depth):
@@ -20,26 +23,26 @@ class Node():
 
     def __contains__(self, point):
         return self.extent.x <= point[0] <= self.extent.x + self.extent.w and \
-        self.extent.y <= point[1] <= self.extent.y + self.extent.h
+            self.extent.y <= point[1] <= self.extent.y + self.extent.h
+
 
     def get_relevant_child(self, data):
-        x = floor((data[0] - self.extent.x)/(self.extent.w/2))
-        y = floor((data[1] - self.extent.y)/(self.extent.h/2))
-        # print(self.extent.x,self.extent.y)
-        # print(self.extent.w,self.extent.h)
-        # print(self.extent)
-        print(x,y)
+        x = floor((data[0] - self.extent.x) / (self.extent.w/2))
+        x = x - floor(x / 2)
+        y = floor((data[1] - self.extent.y) / (self.extent.h/2))
+        y = y - floor(y / 2)
+        # print(x,y)
         # print(x*2+y)
-        # print('@'*20)
-        return self.get_children_for_index()[x*2+y]
+        return self.get_children_for_index()[x * 2 + y]
 
     def __iter__(self):
         yield self
         for child in filter(None, self.children):
             yield from child
 
+
     def get_children_for_index(self):
-        return self.sw,self.nw,self.se,self.nw
+        return self.sw,self.nw,self.se,self.ne
 
     @property
     def children(self):

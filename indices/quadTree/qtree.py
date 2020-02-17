@@ -18,7 +18,7 @@ class QTree:
                 raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
         if copy_data:
             data = data.copy()
-        self.root = Node(data, *tree_extent, depth=1)
+        self.root = Node(data, *tree_extent, depth=0)
         self.max_depth = max_depth
         self.indexed_points = []
         if isinstance(data,Iterable):
@@ -33,26 +33,25 @@ class QTree:
         while node_list:
             node = node_list.popleft()
             if node.depth == self.max_depth:
+                # self.indexed_points.extend(node.data)
                 continue
             if len(node.data) <= 1:
                 continue
             if node.isleaf:
                 node.split_node()
-            for i,value in enumerate(node.data):
+            # print(node.depth)
+            for i, value in enumerate(node.data):
                 # TODO make formula to find which quad a point is in a node
-                for child in node.children:
-                    if child.data:
-                        if value in child.data:
-                            continue
-                    if value in child:
-                        child.data.append(value)
-                        break
+                child = node.get_relevant_child(value)
+                child.data.append(value)
             node.data.clear()
+            # node.indices.clear()
+
             node_list.extend(node.children)
 
     def add_data(self, val):
         # print(val)
-        node = self.search_tree(val)
+        node = self.search(val)
         # print(node)
         # node = self.search_tree(val)
         if node == None:
@@ -65,17 +64,23 @@ class QTree:
         self.indexed_points.append(val)
 
     def search(self, data):
-        node = self.root
-        if data not in node:
-            raise ValueError(f"{data} is not in this QuadTree!")
-        # print(node.extent)
-        while data not in node.data:
-            if not any(node.children):
-                break
-            child = node.get_relevant_child(data)
-            # print(child.extent)
-            node = child
-        return node
+        if data in self.root:
+            node = self.root
+            while not node.isleaf:
+                node = node.get_relevant_child(data)
+            return node
+        raise ValueError('fuck')
+        # node = self.root
+        # if data not in node:
+        #     raise ValueError(f"{data} is not in this QuadTree!")
+        # # print(node.extent)
+        # while data not in node.data:
+        #     if not node.children:
+        #         break
+        #     child = node.get_relevant_child(data)
+        #     # print(child.extent)
+        #     node = child
+        # return node
 
     def search_tree(self, data, root=None):
         if root == None:
