@@ -2,7 +2,7 @@ from collections import namedtuple
 from copy import deepcopy
 from itertools import product
 from math import floor
-# from functools import lru_cache
+from functools import lru_cache
 
 
 class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
@@ -24,7 +24,6 @@ class Node():
     def __contains__(self, point):
         return self.extent.x <= point[0] <= self.extent.x + self.extent.w and \
             self.extent.y <= point[1] <= self.extent.y + self.extent.h
-
 
     def get_relevant_child(self, data):
         x = floor((data[0] - self.extent.x) / (self.extent.w/2))

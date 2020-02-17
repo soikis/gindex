@@ -1,6 +1,7 @@
 from collections import deque
 from collections.abc import Iterable 
 
+from functools import lru_cache
 from node import Extent, Node
 
 
@@ -63,6 +64,7 @@ class QTree:
         # print(node)
         self.indexed_points.append(val)
 
+    
     def search(self, data):
         if data in self.root:
             node = self.root
@@ -70,18 +72,8 @@ class QTree:
                 node = node.get_relevant_child(data)
             return node
         raise ValueError('fuck')
-        # node = self.root
-        # if data not in node:
-        #     raise ValueError(f"{data} is not in this QuadTree!")
-        # # print(node.extent)
-        # while data not in node.data:
-        #     if not node.children:
-        #         break
-        #     child = node.get_relevant_child(data)
-        #     # print(child.extent)
-        #     node = child
-        # return node
 
+    # @lru_cache(maxsize=10000)
     def search_tree(self, data, root=None):
         if root == None:
             root = self.root
