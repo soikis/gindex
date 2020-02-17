@@ -40,13 +40,13 @@ class QuadTree:
 
             if not node.data:
                 continue
-
+            
             if node.isleaf:
                 node.split()
 
             indexed = []
             for child in node.children:
-                in_data = [True if v in child else False for v in node.data]
+                in_data = [True if d in child and d not in child.data else False for d in node.data]
                 data = list(compress(node.data, in_data))
                 indices = list(compress(node.indices, in_data))
                 child.data.extend(data)

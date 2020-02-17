@@ -10,8 +10,8 @@ def main():
     indices = range(sample_size)
 
     sp = default_timer()
-    qt = QuadTree([], [], (0, 0, 128, 128), 4)
-    # qt = QuadTree(data, list(indices), (0, 0, 128, 128), 4)
+    # qt = QuadTree([], [], (0, 0, 128, 128), 4)
+    qt = QuadTree(data, list(indices), (0, 0, 128, 128), 4)
 
     for i, d in enumerate(data):
         # print(i, d)
