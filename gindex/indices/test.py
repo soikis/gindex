@@ -13,13 +13,13 @@ def main():
     # qt = QuadTree([], [], (0, 0, 128, 128), 4)
     qt = QuadTree(data, list(indices), (0, 0, 128, 128), 4)
 
-    for i, d in enumerate(data):
-        # print(i, d)
-        # print(d in qt.indexed_points)
-        qt.index_data(d, indices[i])
-        if i == len(data)-1:
-            print(len(qt.indexed_points), len(set(data)))
-            assert len(set(data)) == len(qt.indexed_points)
+    # for i, d in enumerate(data):
+    #     # print(i, d)
+    #     # print(d in qt.indexed_points)
+    #     qt.index_data(d, indices[i])
+    #     if i == len(data)-1:
+    #         print(len(qt.indexed_points), len(set(data)))
+    #         assert len(set(data)) == len(qt.indexed_points)
 
     np = default_timer()
     print(f'index time: {np-sp} seconds')
@@ -29,7 +29,7 @@ def main():
     for point in data:
         # qt.search(point)
         node = qt.search(point)
-        print(node.extent, node.data, node.indices, point in node.data)
+        print(node.extent, node.data, node.indices, point in node.data, point)
         # print(node)
 
     np = default_timer()
