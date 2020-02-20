@@ -17,71 +17,74 @@ class QuadTree:
                 raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
         if copy_data:
             data = data.copy()
-        self.root = Node(data, indices, *tree_extent, depth=0)
+        self.root = Node([], [], *tree_extent, depth=0)
         self.max_depth = max_depth
         self.indexed_points = []
         if isinstance(data, Iterable):
-            self.index(self.root)
+            self.index(data, indices, self.root, copy_data)
 
     @property
     def extent(self):
         return self.root.extent
 
-    def index(self, root):
-        node_list = deque([root])
-        while node_list:
-            node = node_list.popleft()
-            if node.depth == self.max_depth:
-                # self.indexed_points.extend(node.data)
-                continue
-            if len(node.data) <= 1:
-                continue
-            if node.isleaf:
-                node.split()
-            for i, value in enumerate(node.data):
-                # TODO make formula to find which quad a point is in a node
-                for child in node.children:
-                    if child.data:
-                        if value in child.data:
-                            continue
-                    if value in child:
-                        child.data.append(value)
-                        child.indices.append(node.indices[i])
+    def index(self, data, indices, root=None, copy=True):
+
+        if copy:
+            data = data.copy()
+
+        while data:
+            if data[-1] not in self.root:
+                raise ValueError("{data} is not in this trees extent: {self.root.extent}")
+
+            if root is None:
+                node = self.root
+            else:
+                node = root
+
+            while node.depth < self.max_depth:
+                if node.data and node.isleaf:
+                    node.split()
+                    self.index(node.data, node.indices, node, False)
+                    continue
+                elif node.isleaf:
+                    break
+
+                children = [child for child in node.children if data[-1] in child]
+                if children:
+                    if data[-1] in children[0].data:
                         break
+                    node = children[0]
+            if data[-1] in node.data:
+                break
 
-            node.data.clear()
-            node.indices.clear()
+            node.data.append(data.pop())
+            node.indices.append(indices.pop())
 
-            node_list.extend(node.children)
+            # node_list.extend(node.children)
 
-    def index_data(self, val, index):
-        # Checking index correctness is responsibility of index correctness
+    def index_data(self, val, index, copy=True):
+        if copy:
+            val = val.copy()
+            index = index.copy()
         node = self.search(val)
 
         if node is None:
-            raise ValueError(f"{val} not in this QuadTree extent: {self.extent}")
-
-        if node.data:
-            if val in node.data:
-                return
-
-        node.data.append(val)
-        node.indices.append(index)
-
-        self.index(node)
-        self.indexed_points.append(val)
+            self.index(val)
+            self.indexed_points.append(val)
 
     def search(self, data):
         if data in self.root:
             node = self.root
+            if data in node.data:
+                return node
             while not node.isleaf:
-                t = [child for child in node.children if data in child]
-                for n in t:
-                    if data in n.data:
-                        return n
-                    node = n
-                    break
-            return node
+                children = [child for child in node.children if data in child]
+                if children:
+                    if data in children[0].data:
+                        return children[0]
+                    node = children[0]
+            return None
+        raise ValueError("{data} is not in this trees extent: {self.root.extent}")
 
     def __iter__(self):
         yield from self.root
