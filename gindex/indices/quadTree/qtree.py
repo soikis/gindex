@@ -27,6 +27,22 @@ class QuadTree:
     def extent(self):
         return self.root.extent
 
+    def _find_deepest_node(self, data):
+        if data in self.root:
+            node = self.root
+            while not node.isleaf:
+                children = [child for child in node.children if data in child.extent]
+                if children:
+                    node = children[0]
+            return node
+        raise RuntimeError("Data extent {data} not in this tree's extent: {self.root.extent}")
+
+    def index_data_list(self, data_list):
+        for data in data_list[::-1]:
+            node = self._find_deepest_node(data)
+            # if data in node:
+
+
     def index(self, root):
         node_list = deque([root])
         while node_list:
@@ -42,9 +58,9 @@ class QuadTree:
                 # TODO make formula to find which quad a point is in a node
                 for child in node.children:
                     if child.data:
-                        if value in child.data:
+                        if value in child:
                             continue
-                    if value in child:
+                    if value in child.extent:
                         child.data.append(value)
                         child.indices.append(node.indices[i])
                         break
@@ -62,7 +78,7 @@ class QuadTree:
             raise ValueError(f"{val} not in this QuadTree extent: {self.extent}")
 
         if node.data:
-            if val in node.data:
+            if val in node:
                 return
 
         node.data.append(val)
@@ -72,12 +88,12 @@ class QuadTree:
         self.indexed_points.append(val)
 
     def search(self, data):
-        if data in self.root:
+        if data in self.root.extent:
             node = self.root
             while not node.isleaf:
-                t = [child for child in node.children if data in child]
-                for n in t:
-                    if data in n.data:
+                children = [child for child in node.children if data in child.extent]
+                for n in children:
+                    if data in n:
                         return n
                     node = n
                     break

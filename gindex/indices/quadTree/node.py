@@ -1,26 +1,36 @@
-from collections import namedtuple
 from itertools import product
 
 
-class Extent(namedtuple('Extent', ['x', 'y', 'w', 'h'])):
+class Extent():
+    __slots__ = ('minx', 'miny', 'maxx', 'maxy')
+
+    def __init__(self, minx, miny, maxx, maxy):
+        self.minx = minx
+        self.miny = miny
+        self.maxx = maxx
+        self.maxy = maxy
+
+    def __contains__(self, point):
+        return self.minx <= point[0] <= self.maxx and \
+            self.miny <= point[1] <= self.maxy
+
     def __str__(self):
-        return f"(bottom_left=({self.x},{self.y}),"\
-            f"top_right=({self.x+self.w},{self.y+self.h}))"
+        return f"(bottom_left=({self.minx},{self.miny}),"\
+            f"top_right=({self.maxx},{self.maxy}))"
 
 
 class Node():
     __slots__ = ('nw', 'ne', 'sw', 'se', 'extent', 'data', 'depth', 'indices')
 
-    def __init__(self, data, indices, x, y, w, h, depth=8):
+    def __init__(self, data, indices, minx, miny, maxx, maxy, depth=8):
         self.nw, self.ne, self.sw, self.se = [None, None, None, None]
-        self.extent = Extent(x, y, w, h)
+        self.extent = Extent(minx, miny, maxx, maxy)
         self.data = data
         self.indices = indices
         self.depth = depth
 
     def __contains__(self, point):
-        return self.extent.x <= point[0] <= self.extent.x + self.extent.w and \
-            self.extent.y <= point[1] <= self.extent.y + self.extent.h
+        return point in self.data
 
     def __iter__(self):
         yield self
@@ -40,11 +50,15 @@ class Node():
         return not any(self.children)
 
     def split(self):
-        sw = self.extent.w / 2
-        sh = self.extent.h / 2
-        self.children = [Node([], [], *vertex, sw, sh, self.depth + 1) for vertex in
-                        product([self.extent.x, self.extent.x + sw],
-                                [self.extent.y + sh, self.extent.y])]
+        x_split = (self.extent.maxx - self.extent.minx) / 2
+        y_split = (self.extent.maxy - self.extent.miny) / 2
+
+        child_vertices = [(vertex, (vertex[0] + x_split, vertex[1] + y_split)) for vertex in
+                        product([self.extent.minx, self.extent.minx + x_split],
+                                [self.extent.miny + y_split, self.extent.miny])]
+
+        self.children = [Node([], [], *corners[0], *corners[1], self.depth + 1) for corners
+                        in child_vertices]
 
     def __str__(self):
         return f"\nNode{'_______________'*4}\n" + self.extent.__str__() + \
