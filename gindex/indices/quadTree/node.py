@@ -174,7 +174,7 @@ class Node():
         """
         return not any(self.children)
 
-    def split(self):  # TODO fix documentation
+    def split(self):
         """Split this node to 4 new nodes and if necessary and possible, pass the data to it's children.
 
         Returns:
@@ -201,7 +201,6 @@ class Node():
             if calc_area(*data_point) <= self.sw.extent.area:  # self.sw is used to avoid calling the children property.
                 node = self.get_relevant_child(data_point)
                 if node is not self:
-                    # print(i, len(self.data))
                     node.data.append(self.data.pop(len(self.data) - i - 1))
                     node.indices.append(self.indices.pop(len(self.indices) - i - 1))
 
