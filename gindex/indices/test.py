@@ -14,16 +14,16 @@ def main():
     # data = [(0, 0, 20, 20), (10, 0, 20, 20), (15, 10, 20, 20)]
     # indices = range(3)
     sp = default_timer()
-    # qt = QuadTree([], [], (0, 0, 128, 128), 4)
-    qt = QuadTree(data, list(indices), (0, 0, 128, 128), 4)
+    qt = QuadTree([], [], (0, 0, 128, 128), 4)
+    # qt = QuadTree(data, list(indices), (0, 0, 128, 128), 4)
 
-    # for i, d in enumerate(data):
-    #     # print(i, d)
-    #     # print(d in qt.indexed_points)
-    #     qt.index_data(d, indices[i])
-    #     if i == len(data):
-    #         print(len(qt.indexed_points), len(set(data)))
-    #         assert len(set(data)) == len(qt.indexed_points)
+    for d, i in zip(data, indices):
+        # print(i, d)
+        # print(d in qt.indexed_points)
+        qt.index_data(d, i)
+        # if i == len(data):
+        #     print(len(qt.indexed_points), len(set(data)))
+        #     assert len(set(data)) == len(qt.indexed_points)
 
     np = default_timer()
     print(f'index time: {np-sp} seconds')
@@ -37,7 +37,7 @@ def main():
         # print('found', node)
         # node.extent
         # if not isinstance(node, None):
-        print(node.extent, "-----", point, node.extent.area, " > ", calc_area(*point))
+        print(node.extent, "-----", point, node.extent.area, " > ", calc_area(*point), node.extent.area > calc_area(*point))
         # print(node)
 
     np = default_timer()

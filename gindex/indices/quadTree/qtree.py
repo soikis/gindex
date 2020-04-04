@@ -8,7 +8,7 @@ class QuadTree:
 
     def __init__(self, data=[], indices=[], tree_extent=None, max_depth=8, copy_data=True, verify_inputs=True, ndims=2):
         """QuadTree initializer.
-            The format for 1D data: (x,y), 2D data: (minx,miny,maxx,maxy), 3D data: (minx,miny,maxx,maxy,minz,maxz)
+            Number of dimensions of the data can be chosen. 1D - point(x, y) | 2D - extent(minx, miny, maxx, maxy) | 3D - 3D extent(minx, miny, maxx, maxy, minz, maxz)
 
         ..Note: If verify_inputs is True and the data you input into the tree is not in the correct format, it will be forced into the format and therfore might be errornous.
         Args:
@@ -49,7 +49,6 @@ class QuadTree:
 
         self.root = Node(*tree_extent, verify_inputs=verify_inputs, depth=0)
         self.max_depth = max_depth
-        self.indexed_points = []  # TODO this is shit needs to be deleted
 
         if isinstance(data, Iterable):
             self.index_list(data, indices)
@@ -68,7 +67,7 @@ class QuadTree:
             node = self.root
             prev_node = node
             while not node.isleaf:
-                node = node.get_relevant_child(data)  # TODO might cause an exception and to fix, i need to check that children returned in Node
+                node = node.get_relevant_child(data)
                 if prev_node is node:
                     break
                 prev_node = node
@@ -88,11 +87,13 @@ class QuadTree:
             elif data not in node:
                 # Only try to split the node if the area of data is smaller than the area of node.
                 if calc_area(*data) <= node.extent.area:
+                    # If max depth is reached, don't split no matter what.
                     if node.depth == self.max_depth:
                         pass
                     elif node.isleaf:
                         node.split()
                         node = node.get_relevant_child(data)
+
                     node.data.append(data)
                     node.indices.append(index)
             # TODO clear all unnecessary children      
@@ -124,22 +125,25 @@ class QuadTree:
 
             node_list.extend(node.children)
 
-    def index_data(self, val, index):
-        # Checking index correctness is responsibility of index correctness
-        node = self.search(val)
+    def index_data(self, data, index):
+        node = self._find_deepest_node(data)
 
-        if node is None:
-            raise ValueError(f"{val} not in this QuadTree extent: {self.extent}")
+        if not node.data:
+            node.data.append(data)
+            node.indices.append(index)
 
-        if node.data:
-            if val in node:
-                return
+        elif data not in node:
+            # Only try to split the node if the area of data is smaller than the area of node.
+            if calc_area(*data) <= node.extent.area:
+                # If max depth is reached, don't split no matter what.
+                if node.depth == self.max_depth:
+                    pass
+                elif node.isleaf:
+                    node.split()
+                    node = node.get_relevant_child(data)
 
-        node.data.append(val)
-        node.indices.append(index)
-
-        self.index(node)
-        self.indexed_points.append(val)
+                node.data.append(data)
+                node.indices.append(index)
     
     def search(self, data):
         if data in self.root.extent:
