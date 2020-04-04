@@ -120,8 +120,8 @@ class Node():
 
         return data, indices
 
-    def __contains__(self, point):
-        """Return True if point is in this nodes data, otherwise reutrn False.
+    def __contains__(self, data_index):
+        """Return True if point is in this nodes data, otherwise reutrn False. TODO fix documentation for index
 
         Args:
             point (tuple(float,float)): A tuple of floats that represent a data point.
@@ -129,7 +129,15 @@ class Node():
         Returns:
             bool: True if point is in self.data, otherwise False.
         """
-        return point in self.data
+        try:
+            i = self.data.index(data_index[0])
+            if self.indices[i] == data_index[1]:
+                return True
+            else:
+                return False
+        except ValueError:
+            return False
+        # return point in self.data
 
     # TODO check if docstring is correct
     def __iter__(self):
@@ -166,7 +174,7 @@ class Node():
         """
         return not any(self.children)
 
-    def split(self):
+    def split(self):  # TODO fix documentation
         """Split this node to 4 new nodes and if necessary and possible, pass the data to it's children.
 
         Returns:
@@ -182,18 +190,6 @@ class Node():
         self.children = [Node(*corners[0], *corners[1], [], [], False, self.depth + 1) for corners in child_vertices]  # TODO make a verify input function in utils.
 
         self._pass_data_to_children()
-
-    def clear_children(self):
-        """Clear this nodes children.
-
-        Note: 
-            Use only if the children are completely empty.
-
-        Returns:
-            NoneType: None.
-        """
-        # [child for child in self.children if child.data] TODO this line makes a list of children if there are any data points in it, if there aren't make an empty list.
-        self.children = [None, None, None, None]
 
     def _pass_data_to_children(self):
         """Move the data from this node to it's children, if possible.
@@ -228,4 +224,4 @@ class Node():
 
     def __str__(self):
         return f"\nNode{'_______________'*4}\n" + self.extent.__str__() + \
-            f"\n data: {str(list(zip(self.data,self.indices)))} \n{'_______________'*4}"
+            f"\n data: {str(tuple(zip(self.data,self.indices)))} \n{'_______________'*4}"
