@@ -217,11 +217,21 @@ class Node():
         Returns:
             Node: The child Node that can contain the data.
         """
-        children = [child for child in self.children if data_point in child.extent]  # Maybe self.children is needed, we will see. TODO self.children is needed to avoid yielding the first self
-        if len(children) == 1:
-            return children[0]
-        else:
-            return self
+        counter = 0
+        res_child = self
+        for child in self.children:
+            if data_point in child.extent:
+                counter += 1
+                if counter > 1:
+                    return self
+                res_child = child
+        return res_child
+        # TODO longer code is 0.2 seconds faster than compact code fpr 50,000 samples
+        # children = [child for child in self.children if data_point in child.extent]  # Maybe self.children is needed, we will see. TODO self.children is needed to avoid yielding the first self
+        # if len(children) == 1:
+        #     return children[0]
+        # else:
+        #     return self
 
     def __str__(self):
         return f"\nNode{'_______________'*4}\n" + self.extent.__str__() + \
