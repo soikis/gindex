@@ -191,7 +191,7 @@ class Node():
             NoneType: None.
         """
         remove_list = []
-        for i, (data_point, index) in enumerate(zip(self.data, self.indices)):
+        for data_point, index in zip(self.data, self.indices):
             if calc_area(*data_point) <= self.sw.extent.area:  # self.sw is used to avoid calling the children property. TODO add and self.children exists
                 node = self.get_relevant_child(data_point)
                 if node is not self:
