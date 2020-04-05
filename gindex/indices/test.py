@@ -3,6 +3,7 @@ from quadTree.utils import calc_area
 from timeit import default_timer
 from random import randint, seed
 import numpy as np
+import cProfile
 
 
 def main():
@@ -48,12 +49,22 @@ def main():
     # print(np.std(avg_single_index), avg_single_index.mean())
     # print(np.std(avg_search), avg_search.mean())
 
-    """ for d in data:
-            node = qt.search(point)
-            print(node.extent, "-----", point, node.extent.area, " > ", calc_area(*point), node.extent.area > calc_area(*point))
-        print(f'search time: {np-sp} seconds')"""
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+
+    # for d in data:
+    #     node = qt.search(d)
+    #     print(node.extent, "-----", d, node.extent.area, " > ", calc_area(*d), node.extent.area > calc_area(*d))
+    # print(f'search time: {np-sp} seconds')
     # print(f'index time: {ep-sp} seconds')
 
 
 if __name__ == "__main__":
-    main()
+    import tracemalloc
+    tracemalloc.start()
+    # main()
+    cProfile.run("main()", sort='cumtime')
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+    tracemalloc.stop()
+    # main()

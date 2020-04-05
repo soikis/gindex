@@ -1,6 +1,8 @@
 from itertools import product
 from collections.abc import Iterable
 from .utils import calc_area
+from bisect import bisect_left
+from itertools import compress
 
 """
 Todo: (needs sphinx.ext.todo extension)
@@ -24,7 +26,7 @@ if @property then just explain the variable by type
 https://www.sphinx-doc.org/en/1.5/ext/example_google.html
 """
 
-
+# TODO fix documentation for all this shit
 class Extent():
     __slots__ = ("minx", "miny", "maxx", "maxy")
 
@@ -38,17 +40,20 @@ class Extent():
     def area(self):
         return (self.maxx - self.minx) * (self.maxy - self.miny)
 
-    def __contains__(self, point):
-        """Return True if a point (x,y) falls inside the extent with the *in* operator else, return False.
+    def __contains__(self, data):
+        """Return True if a data (x,y) falls inside the extent with the *in* operator else, return False.
+
+        Warning: It is the users responsebility to make sure that the data is in the correct format. 
+            e.g making sure that the minimum x of data IS bigger than or equal to the maximum x of data
 
         Args:
-            point (tuple(float)): An (x,y) tuple.
+            data (tuple(float)): An (x,y) tuple.
 
         Returns:
-            bool: True if point in extent, False otherwise.
+            bool: True if data in extent, False otherwise.
         """
-        return self.minx <= point[0] <= point[2] <= self.maxx and \
-            self.miny <= point[1] <= point[3] <= self.maxy
+        return self.minx <= data[0] and data[2] <= self.maxx and \
+            self.miny <= data[1] and data[3] <= self.maxy
 
     def __str__(self):
         return f"(bottom_left=({self.minx},{self.miny}),"\
@@ -60,7 +65,7 @@ class Extent():
 
 class Node():
 
-    __slots__ = ("nw", "ne", "sw", "se", "extent", "data", "depth", "indices")
+    __slots__ = ("nw", "ne", "sw", "se", "extent", "data", "depth", "indices", "is_leaf")
 
     def __init__(self, minx, miny, maxx, maxy, data=[], indices=[], verify_inputs=True, depth=8):  # TODO change the order of input in tree.
         """Node initializer. TODO edit Node to NodexD
@@ -86,6 +91,7 @@ class Node():
         self.data = data
         self.indices = indices
         self.depth = depth
+        self.is_leaf = True
 
     # TODO when making 1D, 2D and 3D make sure to insure those sizes in this function.
     def verify_inputs(self, minx, miny, maxx, maxy, data, indices):
@@ -129,15 +135,11 @@ class Node():
         Returns:
             bool: True if point is in self.data, otherwise False.
         """
-        try:
-            i = self.data.index(data_index[0])
-            if self.indices[i] == data_index[1]:
+        index = bisect_left(self.data, data_index[0])
+        if index != len(self.data) and self.data[index] == data_index[0]:
+            if self.indices[index] == data_index[1]:
                 return True
-            else:
-                return False
-        except ValueError:
-            return False
-        # return point in self.data
+        return False
 
     # TODO check if docstring is correct
     def __iter__(self):
@@ -146,10 +148,8 @@ class Node():
         Yields:
             Node: When first called,  #TODO currently when it is called it yeilds itself even if it's not necessary.
         """
-        # yield self
         yield self
         for child in filter(None, self.children):
-            # yield self from child
             yield from child
 
     @property
@@ -164,15 +164,6 @@ class Node():
     @children.setter
     def children(self, nodes):
         self.nw, self.sw, self.ne, self.se = nodes
-
-    @property
-    def isleaf(self):
-        """Return True if this node is a leaf, else return False.
-
-        Returns:
-            bool: true if this node is a leaf, otherwise return False.
-        """
-        return not any(self.children)
 
     def split(self):
         """Split this node to 4 new nodes and if necessary and possible, pass the data to it's children.
@@ -191,18 +182,29 @@ class Node():
 
         self._pass_data_to_children()
 
+        self.is_leaf = False
+
     def _pass_data_to_children(self):
         """Move the data from this node to it's children, if possible.
 
         Returns:
             NoneType: None.
         """
-        for i, (data_point, index) in enumerate(zip(reversed(self.data), reversed(self.indices))):
-            if calc_area(*data_point) <= self.sw.extent.area:  # self.sw is used to avoid calling the children property.
+        remove_list = []
+        for i, (data_point, index) in enumerate(zip(self.data, self.indices)):
+            if calc_area(*data_point) <= self.sw.extent.area:  # self.sw is used to avoid calling the children property. TODO add and self.children exists
                 node = self.get_relevant_child(data_point)
                 if node is not self:
-                    node.data.append(self.data.pop(len(self.data) - i - 1))
-                    node.indices.append(self.indices.pop(len(self.indices) - i - 1))
+                    insertion = bisect_left(node.data, data_point)
+                    node.data.insert(insertion, data_point)
+                    node.indices.insert(insertion, index)
+                    remove_list.append(0)
+                else:
+                    remove_list.append(1)
+            else:
+                remove_list.append(1)
+        self.data = list(compress(self.data, remove_list))
+        self.indices = list(compress(self.indices, remove_list))
 
     def get_relevant_child(self, data_point):
         """Return the child that has data_point inside its extent.

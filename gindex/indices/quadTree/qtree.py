@@ -1,10 +1,12 @@
 from collections.abc import Iterable
 from .node import Node
 from .utils import calc_area
+from bisect import bisect_left, bisect
 
 
 class QuadTree:
 
+    # TODO if verify_input is True add a check for extensions in the index function
     def __init__(self, data=[], indices=[], tree_extent=None, max_depth=8, copy_data=True, verify_inputs=True, ndims=2):
         """QuadTree initializer.
             Number of dimensions of the data can be chosen. 1D - point(x, y) | 2D - extent(minx, miny, maxx, maxy) | 3D - 3D extent(minx, miny, maxx, maxy, minz, maxz)
@@ -65,7 +67,7 @@ class QuadTree:
         if data in self.root.extent:
             node = self.root
             prev_node = node
-            while not node.isleaf:
+            while not node.is_leaf:
                 node = node.get_relevant_child(data)
                 if prev_node is node:
                     break
@@ -88,13 +90,14 @@ class QuadTree:
                 # If max depth is reached, don't split no matter what.
                 if node.depth == self.max_depth:
                     pass
-         
-                elif node.isleaf:
+
+                elif node.is_leaf:
                     node.split()
                     node = node.get_relevant_child(data)
 
-                node.data.append(data)
-                node.indices.append(index)
+                insertion = bisect_left(node.data, data)
+                node.data.insert(insertion, data)
+                node.indices.insert(insertion, index)
 
     def index(self, data, index):
         if isinstance(data, Iterable) and isinstance(index, Iterable):
@@ -110,7 +113,7 @@ class QuadTree:
         if data in self.root.extent:
             node = self.root
             parent = node
-            while not node.isleaf:
+            while not node.is_leaf:
                 node = node.get_relevant_child(data)
                 # If there is no progress in the tree structure, break out of the while loop.
                 if node is parent:
@@ -118,10 +121,11 @@ class QuadTree:
                 parent = node
 
             # If data is inside node.data return the node, otherwise print a message that this data is not in the tree.
-            if data in node.data:
-                return node  # TODO make into return index DUU
+            index = bisect_left(node.data, data)
+            if index != len(node.data) and node.data[index] == data:
+                return node
             else:
-                print(f"{data} is not inside this QuadTree")
+                print(f"{data} is not inside this QuadTree")  # TODO maybe raise because it will raise an exception anyway
 
     def __iter__(self):
         yield from self.root
