@@ -1,40 +1,72 @@
 from quadTree.qtree import QuadTree
+from quadTree.utils import calc_area
 from timeit import default_timer
 from random import randint, seed
+import numpy as np
+import cProfile
 
 
 def main():
-    sample_size = 500
+    iters = 1
+    sample_size = 500000
     seed(a=10)
     data = [(randint(0, 128), randint(0, 128)) for _ in range(sample_size)]
-    indices = range(sample_size)
+    data = [(d[0], d[1], d[0] + randint(0, 128 - d[0]), d[1] + randint(0, 128 - d[1])) for d in data]
+    indices = range(sample_size) # TODO make list()
 
-    sp = default_timer()
-    # qt = QuadTree([], [], (0, 0, 128, 128), 4)
-    qt = QuadTree(data, list(indices), (0, 0, 128, 128), 4)
+    avg_bulk_index = []
 
-    # for i, d in enumerate(data):
-    #     print(i, d)
-    #     # print(d in qt.indexed_points)
-    #     qt.index_data(d, indices[i])
-    #     if i == len(data):
-    #         print(len(qt.indexed_points), len(set(data)))
-    #         assert len(set(data)) == len(qt.indexed_points)
+    for i in range(iters):
+        sp = default_timer()
+        qt = QuadTree(data, list(indices), (0, 0, 128, 128), 4)
+        ep = default_timer()
+        avg_bulk_index.append(ep - sp)
 
-    np = default_timer()
-    print(f'index time: {np-sp} seconds')
+    avg_single_index = []
 
-    sp = default_timer()
+    for i in range(iters):
+        sp = default_timer()
+        qt = QuadTree([], [], (0, 0, 128, 128), 4)
+        for d, i in zip(data, indices):
+            qt.index(d, i)
+        ep = default_timer()
+        avg_single_index.append(ep - sp)
 
-    for point in data:
-        # qt.search(point)
-        node = qt.search(point)
-        print(node.extent, node.data, node.indices)
-        # print(node)
+    avg_search = []
 
-    np = default_timer()
-    print(f'search time: {np-sp} seconds')
+    for i in range(iters):
+        sp = default_timer()
+        for point in data:
+            qt.search(point)
+        ep = default_timer()
+        avg_search.append(ep - sp)
+
+    avg_bulk_index = np.array(avg_bulk_index)
+    avg_single_index = np.array(avg_single_index)
+    avg_search = np.array(avg_search)
+
+    print(np.std(avg_bulk_index), avg_bulk_index.mean())
+    print(np.std(avg_single_index), avg_single_index.mean())
+    print(np.std(avg_search), avg_search.mean())
+
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+
+    print(qt.root.extent.area)
+    print(qt.root.children[0].extent.area)
+    # for d in data:
+    #     node = qt.search(d)
+    #     print(node.extent, "-----", d, node.extent.area, " > ", calc_area(*d), node.extent.area > calc_area(*d))
+    # print(f'search time: {np-sp} seconds')
+    # print(f'index time: {ep-sp} seconds')
 
 
 if __name__ == "__main__":
+    import tracemalloc
+    tracemalloc.start()
     main()
+    # cProfile.run("main()", sort='cumtime')
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
+    tracemalloc.stop()
+    # main()
