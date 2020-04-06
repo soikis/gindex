@@ -107,6 +107,9 @@ class QuadTree:
             # TODO add if data is not a list of floats or ints, raise exception
             self._index_data_point(data, index)
 
+    def __contains__(self, data):
+        return self.search(data)
+
     def search(self, data):
         if data in self.root.extent:
             node = self.root
