@@ -42,13 +42,13 @@ class Extent():
         return (self.maxx - self.minx) * (self.maxy - self.miny)
 
     def __contains__(self, data):
-        """Return True if a data (x,y) falls inside the extent with the *in* operator else, return False.
+        """Return True if a data (minx, miny, maxx, maxy) falls inside the extent with the *in* operator else, return False.
 
-        Warning: It is the users responsebility to make sure that the data is in the correct format. 
-            e.g making sure that the minimum x of data IS bigger than or equal to the maximum x of data
+        Warning: It is the users responsebility to make sure that the data is in the correct format.
+            e.g making sure that the minimum x of data IS bigger than or equal to the maximum x of data.
 
         Args:
-            data (tuple(float)): An (x,y) tuple.
+            data (tuple(float, float, float ,float)): An (minx, miny, maxx, maxy) tuple.
 
         Returns:
             bool: True if data in extent, False otherwise.
