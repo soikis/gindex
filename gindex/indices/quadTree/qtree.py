@@ -66,12 +66,10 @@ class QuadTree:
     def _find_deepest_node(self, data):
         if data in self.root.extent:
             node = self.root
-            prev_node = node
-            while not node.is_leaf:
-                node = node.get_relevant_child(data)
-                if prev_node is node:
-                    break
+            prev_node = None
+            while not node.is_leaf and node is not prev_node:
                 prev_node = node
+                node = node.get_relevant_child(data)
             return node
         raise RuntimeError("Data extent {data} not in this tree's extent: {self.root.extent}")
 

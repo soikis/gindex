@@ -26,6 +26,7 @@ if @property then just explain the variable by type
 https://www.sphinx-doc.org/en/1.5/ext/example_google.html
 """
 
+
 # TODO fix documentation for all this shit
 class Extent():
     __slots__ = ("minx", "miny", "maxx", "maxy")
@@ -192,7 +193,7 @@ class Node():
         """
         remove_list = []
         for data_point, index in zip(self.data, self.indices):
-            if calc_area(*data_point) <= self.sw.extent.area:  # self.sw is used to avoid calling the children property. TODO add and self.children exists
+            if calc_area(*data_point) <= self.extent.area / 4: # The area of 1 child is 1/4 of the parent.
                 node = self.get_relevant_child(data_point)
                 if node is not self:
                     insertion = bisect_left(node.data, data_point)
@@ -226,12 +227,6 @@ class Node():
                     return self
                 res_child = child
         return res_child
-        # TODO longer code is 0.2 seconds faster than compact code fpr 50,000 samples
-        # children = [child for child in self.children if data_point in child.extent]  # Maybe self.children is needed, we will see. TODO self.children is needed to avoid yielding the first self
-        # if len(children) == 1:
-        #     return children[0]
-        # else:
-        #     return self
 
     def __str__(self):
         return f"\nNode{'_______________'*4}\n" + self.extent.__str__() + \
