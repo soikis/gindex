@@ -8,7 +8,7 @@ import cProfile
 
 def main():
     iters = 1
-    sample_size = 500000
+    sample_size = 500
     seed(a=10)
     data = [(randint(0, 128), randint(0, 128)) for _ in range(sample_size)]
     data = [(d[0], d[1], d[0] + randint(0, 128 - d[0]), d[1] + randint(0, 128 - d[1])) for d in data]
@@ -52,8 +52,9 @@ def main():
     current, peak = tracemalloc.get_traced_memory()
     print(f"Current memory usage is {current / 10**6}MB; Peak was {peak / 10**6}MB")
 
-    print(qt.root.extent.area)
-    print(qt.root.children[0].extent.area)
+    # print(qt.root.extent.area)
+    # print(qt.root.children[0].extent.area)
+    print([node.depth for node in qt])
     # for d in data:
     #     node = qt.search(d)
     #     print(node.extent, "-----", d, node.extent.area, " > ", calc_area(*d), node.extent.area > calc_area(*d))

@@ -227,7 +227,7 @@ class Node():
                     return self
                 res_child = child
         return res_child
-
+    
     def __str__(self):
         return f"\nNode{'_______________'*4}\n" + self.extent.__str__() + \
             f"\n data: {str(tuple(zip(self.data,self.indices)))} \n{'_______________'*4}"

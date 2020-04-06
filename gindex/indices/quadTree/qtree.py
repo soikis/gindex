@@ -2,6 +2,7 @@ from collections.abc import Iterable
 from .node import Node
 from .utils import calc_area
 from bisect import bisect_left, bisect
+import json
 
 
 class QuadTree:
@@ -108,7 +109,7 @@ class QuadTree:
             self._index_data_point(data, index)
 
     def __contains__(self, data):
-        return self.search(data)
+        return True if isinstance(self.search(data), Node) else False
 
     def search(self, data):
         if data in self.root.extent:
@@ -127,6 +128,22 @@ class QuadTree:
                 return node
             else:
                 print(f"{data} is not inside this QuadTree")  # TODO maybe raise because it will raise an exception anyway
+                return None
 
+    # TODO maybe implement __getitem__ so qt[data] can be used.
+    # TODO maybe implement __delitem for del qt[data] and make it delete a data point and index from the nodes lists.
+
+    # TODO maybe implement saving a json (not pickle for security reasons)
+    def to_json(self):
+        tree = {"QTree": {}}
+        for level in range(self.max_depth):
+            # for child 
+            pass
+
+    def from_json(self):
+        pass
+    
+    def _traverse_tree(self):
+        
     def __iter__(self):
         yield from self.root
