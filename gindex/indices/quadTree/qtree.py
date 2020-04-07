@@ -1,14 +1,17 @@
 from collections.abc import Iterable
+from collections import OrderedDict
 from .node import Node
 from .utils import calc_area
-from bisect import bisect_left, bisect
+from bisect import bisect_left
 import json
+import os
+import gzip
 
 
 class QuadTree:
 
     # TODO if verify_input is True add a check for extensions in the index function
-    def __init__(self, data=[], indices=[], tree_extent=None, max_depth=8, copy_data=True, verify_inputs=True, ndims=2):
+    def __init__(self, tree_extent, root=None, max_depth=8, copy_data=True, verify_inputs=True, ndims=2):
         """QuadTree initializer.
             Number of dimensions of the data can be chosen. 1D - point(x, y) | 2D - extent(minx, miny, maxx, maxy) | 3D - 3D extent(minx, miny, maxx, maxy, minz, maxz)
 
@@ -32,28 +35,30 @@ class QuadTree:
             if max_depth < 1:
                 raise ValueError("parameter 'max_depth' with value of {max_depth} can't be lower than 1.")
 
-            if len(data) != len(indices):
-                raise IndexError(f"data of length {len(data)} is not the same as indices of length {len(indices)}")
+            # if len(data) != len(indices):
+            #     raise IndexError(f"data of length {len(data)} is not the same as indices of length {len(indices)}")
 
         # If no extent is specified, calculate it
-        if tree_extent is None:
-            if isinstance(data, Iterable):
-                bottom_x = min([p[0] for p in data])
-                top_x = max([p[0] for p in data])
-                bottom_y = min([p[1] for p in data])
-                top_y = max([p[1] for p in data])
-                tree_extent = (bottom_x, top_x, bottom_y, top_y)
-            else:
-                raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
+        # if tree_extent is None:
+        #     if isinstance(data, Iterable):
+        #         bottom_x = min([p[0] for p in data])
+        #         top_x = max([p[0] for p in data])
+        #         bottom_y = min([p[1] for p in data])
+        #         top_y = max([p[1] for p in data])
+        #         tree_extent = (bottom_x, top_x, bottom_y, top_y)
+        #     else:
+        #         raise ValueError(f"Your input did not include an extent for the tree, and it was not possible to get an extent from your input of type {type(data)}")
 
-        if copy_data:
-            data = data.copy()
-
-        self.root = Node(*tree_extent, verify_inputs=verify_inputs, depth=0)
+        # if copy_data:
+        #     data = data.copy()
+        if isinstance(root, Node):  # TODO change to node1d node2d node3d
+            self.root = root
+        elif root is None:
+            self.root = Node(*tree_extent, depth=0)
+        else:
+            raise TypeError(f"variable root of type {type(root)} is not an acceptable type")
         self.max_depth = max_depth
-
-        if isinstance(indices, Iterable):
-            self.index(data, indices)
+        self.ndims = ndims
 
     @property
     def extent(self):
@@ -111,6 +116,7 @@ class QuadTree:
     def __contains__(self, data):
         return True if isinstance(self.search(data), Node) else False
 
+    # TODO try to make this recursive again with get_relevant_child for readability purposes.
     def search(self, data):
         if data in self.root.extent:
             node = self.root
@@ -121,8 +127,8 @@ class QuadTree:
                 if node is parent:
                     break
                 parent = node
-
             # If data is inside node.data return the node, otherwise print a message that this data is not in the tree.
+            # TODO maybe use in operator for checking and if true return node?
             index = bisect_left(node.data, data)
             if index != len(node.data) and node.data[index] == data:
                 return node
@@ -132,18 +138,47 @@ class QuadTree:
 
     # TODO maybe implement __getitem__ so qt[data] can be used.
     # TODO maybe implement __delitem for del qt[data] and make it delete a data point and index from the nodes lists.
-
+    # TODO provide a function to check if data is in the correct format
     # TODO maybe implement saving a json (not pickle for security reasons)
-    def to_json(self):
-        tree = {"QTree": {}}
-        for level in range(self.max_depth):
-            # for child 
-            pass
+    def to_json(self, path, file_name="qtree", compress=False):
+        tree_dict = OrderedDict([('qtree', OrderedDict([('ndims', self.ndims), ('max_depth', self.max_depth)]))])
+        path = os.path.join(path, file_name)
+        root_hierarchy = self.root.to_dict()
+        tree_dict['qtree']['nodes'] = root_hierarchy
+        if compress:
+            path += ".gz"
+            with gzip.open(path, 'wt') as write_compressed:
+                josn_string = json.dumps(tree_dict)
+                write_compressed.write(josn_string)
+        else:
+            path += ".json"
+            with open(path, "w") as write_file:
+                json.dump(tree_dict, write_file, indent="\t")
 
-    def from_json(self):
+
+    @staticmethod
+    def from_json(path):
+        extension = os.path.splitext(path)[1]
+        if extension == ".gz":
+            with gzip.open(path, 'rt') as read_compressed:
+                json_string = read_compressed.read()
+                tree_dict = json.loads(json_string)
+                root_node = tree_dict['qtree']['nodes']
+                n = Node.from_dict(root_node)
+                return QuadTree(n.extent, n, max_depth=tree_dict['qtree']['max_depth'], ndims=tree_dict['qtree']['ndims'])
+
         pass
-    
-    def _traverse_tree(self):
-        
+
+    def _tree_dict(self, node):
+        # if node.is_leaf:
+        #     return node
+        # node_children_dict = OrderedDict()
+        # for child, name in zip(node.children, ["nw", "sw", "ne", "se"]):
+        #     child_name = f"{child.depth}-{name}"
+        #     node_children_dict[child_name] = self._traverse_tree(child)
+        #     node_children_dict[child_name]
+        # return node_children_dict
+        return self.root.to_dict()
+
     def __iter__(self):
         yield from self.root

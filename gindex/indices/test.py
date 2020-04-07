@@ -12,25 +12,26 @@ def main():
     seed(a=10)
     data = [(randint(0, 128), randint(0, 128)) for _ in range(sample_size)]
     data = [(d[0], d[1], d[0] + randint(0, 128 - d[0]), d[1] + randint(0, 128 - d[1])) for d in data]
-    indices = range(sample_size) # TODO make list()
+    indices = range(sample_size)  # TODO make list()
 
     avg_bulk_index = []
 
     for i in range(iters):
         sp = default_timer()
-        qt = QuadTree(data, list(indices), (0, 0, 128, 128), 4)
+        qt = QuadTree((0, 0, 128, 128), max_depth=4)
+        qt.index(data, list(indices))
         ep = default_timer()
         avg_bulk_index.append(ep - sp)
 
-    avg_single_index = []
+    # avg_single_index = []
 
-    for i in range(iters):
-        sp = default_timer()
-        qt = QuadTree([], [], (0, 0, 128, 128), 4)
-        for d, i in zip(data, indices):
-            qt.index(d, i)
-        ep = default_timer()
-        avg_single_index.append(ep - sp)
+    # for i in range(iters):
+    #     sp = default_timer()
+    #     qt = QuadTree((0, 0, 128, 128), max_depth=4)
+    #     for d, i in zip(data, indices):
+    #         qt.index(d, i)
+    #     ep = default_timer()
+    #     avg_single_index.append(ep - sp)
 
     avg_search = []
 
@@ -42,11 +43,11 @@ def main():
         avg_search.append(ep - sp)
 
     avg_bulk_index = np.array(avg_bulk_index)
-    avg_single_index = np.array(avg_single_index)
+    # avg_single_index = np.array(avg_single_index)
     avg_search = np.array(avg_search)
 
     print(np.std(avg_bulk_index), avg_bulk_index.mean())
-    print(np.std(avg_single_index), avg_single_index.mean())
+    # print(np.std(avg_single_index), avg_single_index.mean())
     print(np.std(avg_search), avg_search.mean())
 
     current, peak = tracemalloc.get_traced_memory()
@@ -54,7 +55,10 @@ def main():
 
     # print(qt.root.extent.area)
     # print(qt.root.children[0].extent.area)
-    print([node.depth for node in qt])
+    # print([node.depth for node in qt])
+    qt.to_json(r"C:\Users\Tal\Downloads", compress=True)
+    # test = QuadTree.from_json(r"C:\Users\Tal\Downloads\qtree.gz")
+    # test
     # for d in data:
     #     node = qt.search(d)
     #     print(node.extent, "-----", d, node.extent.area, " > ", calc_area(*d), node.extent.area > calc_area(*d))
