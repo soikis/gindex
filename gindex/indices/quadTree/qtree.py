@@ -139,46 +139,48 @@ class QuadTree:
     # TODO maybe implement __getitem__ so qt[data] can be used.
     # TODO maybe implement __delitem for del qt[data] and make it delete a data point and index from the nodes lists.
     # TODO provide a function to check if data is in the correct format
-    # TODO maybe implement saving a json (not pickle for security reasons)
-    def to_json(self, path, file_name="qtree", compress=False):
-        tree_dict = OrderedDict([('qtree', OrderedDict([('ndims', self.ndims), ('max_depth', self.max_depth)]))])
+    def to_file(self, path, file_name="qtree", compress=False):
         path = os.path.join(path, file_name)
-        root_hierarchy = self.root.to_dict()
-        tree_dict['qtree']['nodes'] = root_hierarchy
         if compress:
             path += ".gz"
             with gzip.open(path, 'wt') as write_compressed:
-                josn_string = json.dumps(tree_dict)
+                josn_string = json.dumps(self, default=QuadTree.encode_tree)
                 write_compressed.write(josn_string)
         else:
             path += ".json"
             with open(path, "w") as write_file:
-                json.dump(tree_dict, write_file, indent="\t")
+                json.dump(self, write_file, default=QuadTree.encode_tree, indent="\t")
 
+    @staticmethod
+    def encode_tree(tree):
+        if isinstance(tree, QuadTree):
+            tree_dict = OrderedDict([('qtree', OrderedDict([('ndims', tree.ndims), ('max_depth', tree.max_depth)]))])
+            root_hierarchy = tree.root.to_dict()
+            tree_dict['qtree']['nodes'] = root_hierarchy
+            return tree_dict
+        else:
+            raise TypeError(f"object of type {type(tree)} is not JSON serializable")
 
     @staticmethod
     def from_json(path):
         extension = os.path.splitext(path)[1]
         if extension == ".gz":
             with gzip.open(path, 'rt') as read_compressed:
+                # Reading the file to a dictionary.
                 json_string = read_compressed.read()
                 tree_dict = json.loads(json_string)
-                root_node = tree_dict['qtree']['nodes']
-                n = Node.from_dict(root_node)
-                return QuadTree(n.extent, n, max_depth=tree_dict['qtree']['max_depth'], ndims=tree_dict['qtree']['ndims'])
 
-        pass
+        elif extension == ".json":
+            with open(path, "r") as read_json:
+                # Reading the file to a dictionary.
+                tree_dict = json.load(read_json)
 
-    def _tree_dict(self, node):
-        # if node.is_leaf:
-        #     return node
-        # node_children_dict = OrderedDict()
-        # for child, name in zip(node.children, ["nw", "sw", "ne", "se"]):
-        #     child_name = f"{child.depth}-{name}"
-        #     node_children_dict[child_name] = self._traverse_tree(child)
-        #     node_children_dict[child_name]
-        # return node_children_dict
-        return self.root.to_dict()
+        # Extracting all the data from the dictionary.
+        max_depth = tree_dict['qtree']['max_depth']
+        ndims = tree_dict['qtree']['ndims']
+        root_node = Node.from_dict(tree_dict['qtree']['nodes'])
+
+        return QuadTree(root_node.extent, root_node, max_depth=max_depth, ndims=ndims)
 
     def __iter__(self):
         yield from self.root

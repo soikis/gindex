@@ -30,17 +30,14 @@ https://www.sphinx-doc.org/en/1.5/ext/example_google.html
 
 # TODO fix documentation for all this shit
 class Extent():
-    __slots__ = ("minx", "miny", "maxx", "maxy")
+    __slots__ = ("minx", "miny", "maxx", "maxy", "area")
 
     def __init__(self, minx, miny, maxx, maxy):
         self.minx = minx
         self.miny = miny
         self.maxx = maxx
         self.maxy = maxy
-
-    @property
-    def area(self):
-        return (self.maxx - self.minx) * (self.maxy - self.miny)
+        self.area = (self.maxx - self.minx) * (self.maxy - self.miny)
 
     def __contains__(self, data):
         """Return True if a data (minx, miny, maxx, maxy) falls inside the extent with the *in* operator else, return False.
@@ -57,20 +54,22 @@ class Extent():
         return self.minx <= data[0] and data[2] <= self.maxx and \
             self.miny <= data[1] and data[3] <= self.maxy
 
-    def to_tuple(self):
-        return self.minx, self.miny, self.maxx, self.maxy
+    def __iter__(self):
+        yield self.minx
+        yield self.miny
+        yield self.maxx
+        yield self.maxy
 
     def __str__(self):
-        return f"{self.minx} {self.miny} {self.maxx} {self.maxy}"
-        # return f"(bottom_left=({self.minx},{self.miny}),"\
-        #     f"top_right=({self.maxx},{self.maxy}))"
+        return f"(bottom_left=({self.minx},{self.miny}),"\
+            f"top_right=({self.maxx},{self.maxy}))"
 
 
 # TODO make a Node1dD, Node2D and Node3D
 # TODO make children into a dict with the names, use __setattr__ and __getattr__
 
 class Node():
-    
+
     __slots__ = ("children", "extent", "data", "depth", "indices", "is_leaf")
 
     def __init__(self, minx, miny, maxx, maxy, depth, data=[], indices=[], verify_inputs=False, is_leaf=True):  # TODO change the order of input in tree.
@@ -91,7 +90,6 @@ class Node():
         """
         # north-west, north-east, south-west, south-east children nodes of the current node, respectively.
         self.children = {"nw": None, "ne": None, "sw": None, "se": None}
-        # self.nw, self.ne, self.sw, self.se = [None, None, None, None]
         if verify_inputs:
             data, indices = self.verify_inputs(minx, miny, maxx, maxy, data, indices)
         self.extent = Extent(minx, miny, maxx, maxy)
@@ -159,19 +157,6 @@ class Node():
         for child in filter(None, self.children):
             yield from child
 
-    # @property
-    # def children(self):
-    #     """Return a tuple of all the child nodes of this node. Also sets them.
-
-    #     Returns:
-    #         tuple: tuple of all child nodes of this node.
-    #     """
-    #     return self.nw, self.sw, self.ne, self.se  # TODO I changed from se and ne TO ne and se CHANGE DOCUMENTATION
-
-    # @children.setter
-    # def children(self, nodes):
-    #     self.nw, self.sw, self.ne, self.se = nodes
-
     def split(self):
         """Split this node to 4 new nodes and if necessary and possible, pass the data to it's children.
 
@@ -186,7 +171,7 @@ class Node():
                                 [self.extent.miny + y_split, self.extent.miny])]
 
         for name, corners in zip(self.children.keys(), child_vertices):
-            self.children[name] = Node(*corners[0], *corners[1], data=[], indices=[], depth=self.depth + 1) # data and indices need to be specified because, in the scope, they are equal to this nodes data and indices.
+            self.children[name] = Node(*corners[0], *corners[1], data=[], indices=[], depth=self.depth + 1)  # data and indices need to be specified because, in the scope, they are equal to this nodes data and indices.
         # self.children = {name: Node(*corners[0], *corners[1], depth=self.depth + 1)
         #                 for (name, corners) in zip(self.children.keys(), child_vertices)}  # TODO make a verify input function in utils.
 
@@ -203,7 +188,7 @@ class Node():
         # TODO might be able to use this with pop and recursion (tail-recursion)
         remove_list = []
         for data_point, index in zip(self.data, self.indices):
-            if calc_area(*data_point) <= self.extent.area / 4: # The area of 1 child is 1/4 of the parent.
+            if calc_area(*data_point) <= self.extent.area / 4:  # The area of 1 child is 1/4 of the parent.
                 node = self.get_relevant_child(data_point)
                 if node is not self:
                     insertion = bisect_left(node.data, data_point)
@@ -243,27 +228,24 @@ class Node():
         node_dict = OrderedDict()
         node_dict["depth"] = self.depth
         node_dict["is_leaf"] = self.is_leaf
-        node_dict["extent"] = self.extent.to_tuple()
-        # node_dict["data"] = str(self.data).strip("[]").replace("),", ")")
-        # node_dict["indices"] = str(self.indices).strip("[]").replace(",", " ")
-        node_dict["data"] = self.data  # TODO when reading back, I might need to strip the [] with strip('[]')
+        node_dict["extent"] = tuple(self.extent)
+        node_dict["data"] = self.data
         node_dict["indices"] = self.indices
         if not self.is_leaf:
             node_dict["children"] = dict()
-            for name, child in self.children.items():  # If I use a dict, this zip will not need to be done.
+            for name, child in self.children.items():
                 node_dict["children"][name] = child.to_dict()
         return node_dict
-    
+
     # TODO might be able to use recursion.
     @staticmethod
-    def from_dict(node_dict, node=None):
+    def from_dict(node_dict):
         depth = node_dict["depth"]
         is_leaf = node_dict["is_leaf"]
         extent = node_dict["extent"]
         data = list(map(tuple, node_dict["data"]))
         indices = node_dict["indices"]
         node = Node(*extent, data=data, indices=indices, depth=depth, is_leaf=is_leaf)
-        # TODO deal with children as dict
         if not node.is_leaf:
             for name, child in node_dict["children"].items():
                 node.children[name] = Node.from_dict(child)
