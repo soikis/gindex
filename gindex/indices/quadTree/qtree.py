@@ -8,10 +8,12 @@ import os
 import gzip
 
 
+# TODO rewrite documentation
 class QuadTree:
 
     # TODO if verify_input is True add a check for extensions in the index function
-    def __init__(self, tree_extent, root=None, max_depth=8, copy_data=True, verify_inputs=True, ndims=2):
+    # TODO add a parameter to choose the minimal amount of data points in a node for splitting
+    def __init__(self, tree_extent, root=None, max_depth=8, copy_data=True, verify_inputs=True, ndims=2, min_split=5):
         """QuadTree initializer.
             Number of dimensions of the data can be chosen. 1D - point(x, y) | 2D - extent(minx, miny, maxx, maxy) | 3D - 3D extent(minx, miny, maxx, maxy, minz, maxz)
 
@@ -59,6 +61,7 @@ class QuadTree:
             raise TypeError(f"variable root of type {type(root)} is not an acceptable type")
         self.max_depth = max_depth
         self.ndims = ndims
+        self.min_split = min_split
 
     @property
     def extent(self):
@@ -77,7 +80,7 @@ class QuadTree:
                 prev_node = node
                 node = node.get_relevant_child(data)
             return node
-        raise RuntimeError("Data extent {data} not in this tree's extent: {self.root.extent}")
+        raise RuntimeError(f"Data extent {data} not in this tree's extent: {self.root.extent}")
 
     def _index_data_point(self, data, index):
         # Find the deepest node that this data point might be in.
@@ -95,7 +98,7 @@ class QuadTree:
                 if node.depth == self.max_depth:
                     pass
 
-                elif node.is_leaf:
+                elif node.is_leaf and len(node.data) >= self.min_split:
                     node.split()
                     node = node.get_relevant_child(data)
 
@@ -140,6 +143,7 @@ class QuadTree:
     # TODO maybe implement __delitem for del qt[data] and make it delete a data point and index from the nodes lists.
     # TODO provide a function to check if data is in the correct format
     def to_file(self, path, file_name="qtree", compress=False):
+        # TODO add a parameter for compression amount
         path = os.path.join(path, file_name)
         if compress:
             path += ".gz"
@@ -162,7 +166,7 @@ class QuadTree:
             raise TypeError(f"object of type {type(tree)} is not JSON serializable")
 
     @staticmethod
-    def from_json(path):
+    def from_file(path):
         extension = os.path.splitext(path)[1]
         if extension == ".gz":
             with gzip.open(path, 'rt') as read_compressed:
@@ -179,7 +183,7 @@ class QuadTree:
         max_depth = tree_dict['qtree']['max_depth']
         ndims = tree_dict['qtree']['ndims']
         root_node = Node.from_dict(tree_dict['qtree']['nodes'])
-
+        # TODO add min_split to read and write json aswell!!!!!!!!!
         return QuadTree(root_node.extent, root_node, max_depth=max_depth, ndims=ndims)
 
     def __iter__(self):

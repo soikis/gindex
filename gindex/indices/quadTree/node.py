@@ -67,7 +67,7 @@ class Extent():
 
 # TODO make a Node1dD, Node2D and Node3D
 # TODO make children into a dict with the names, use __setattr__ and __getattr__
-
+# TODO for data use a binary tree (the index lookup will need to be different)
 class Node():
 
     __slots__ = ("children", "extent", "data", "depth", "indices", "is_leaf")
