@@ -9,7 +9,7 @@ import json
 
 def main(data=None, extent=None):
     iters = 1
-    sample_size = 5
+    sample_size = 500
     seed(a=10)
     data = [(randint(0, 128), randint(0, 128)) for _ in range(sample_size)]
     data = [(d[0], d[1], d[0] + randint(0, 128 - d[0]), d[1] + randint(0, 128 - d[1])) for d in data]
@@ -72,7 +72,7 @@ def main(data=None, extent=None):
     # print(f"\nwrite compressed time {ep-sp}")
     
     # sp = default_timer()
-    # test = QuadTree.from_filen(r"C:\Users\Tal\Downloads\qtree.gz")
+    # test = QuadTree.from_file(r"C:\Users\Tal\Downloads\qtree.gz")
     # ep = default_timer()
     # print(f"read compressed time {ep-sp}")
 
@@ -89,7 +89,7 @@ def main(data=None, extent=None):
 
 
 if __name__ == "__main__":
-    with open(r"C:\Users\Tal\Documents\gindex\testing_for_gindex.geojson") as la:
+    with open(r"C:\Users\Tal\Documents\python_scripts\gindex\testing_for_gindex.geojson") as la:
         layer = json.load(la)
         data = [list(map(tuple, d["geometry"]["coordinates"])) for d in layer["features"]]
         indices = list([i["properties"]["fid"] for i in layer["features"]])
